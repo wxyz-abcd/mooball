@@ -1,0 +1,35 @@
+// node.js / CommonJS initialization:
+const { OperationType, VariableType, ConnectionState, AllowFlags, Direction, CollisionFlags, CameraFollow, BackgroundType, GamePlayState, BanEntryType, Callback, Utils, Room, Replay, Query, Library, RoomConfig, Plugin, Renderer, Errors, Language, EventFactory, Impl } = API = require("../../src/index")();
+const EnglishLanguage = require("../languages/englishLanguage");
+API.Language.current = new EnglishLanguage(API); // if you want to use error.toString()
+
+// For initialization on browsers, read the documentation here: https://github.com/wxyz-abcd/mooball#-usage-on-browser
+
+Room.create({
+  name: "bot test", 
+  password: "pwd", 
+  showInRoomList: true, 
+  maxPlayerCount: 10,
+  token: "thr1.AAAAAGNNfqJzDRdCGcM59w.jO07to-jIsA", // token value must be manually obtained from: https://www.moo-hoo.com/mooball/headlesstoken
+}, {
+  storage: {
+    player_name: "wxyz-abcd",
+    avatar: "👽"
+  }, 
+  libraries: [], // example library usage: [new commands(API)] // look at examples/libraries folder for related examples.
+  config: null, // example roomConfig usage: new defaultConfig(API) // look at examples/roomConfigs folder for related examples.
+  renderer: null, // example renderer usage: new defaultRenderer(API, {canvas: ..., images: {grass: ..., concrete: ..., concrete2: ..., typing: ...}, paintGame: true})
+  plugins: [], // example plugin usage: [new autoPlay_followBall(API)] // look at examples/plugins folder for related examples.
+  onOpen: roomCallbacks,
+  onClose: (msg)=>{
+    console.log("Bot has left the room:", msg.toString());
+    process.exit(0);
+  }
+});
+
+function roomCallbacks(room){
+  room.onRoomLink = (roomLink)=>{
+    console.log("room link:", roomLink);
+  };
+  console.log("created room");
+}
