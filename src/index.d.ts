@@ -742,7 +742,7 @@ declare enum OperationType {
   /**
    * The operation to send announcement using the improved announcement api.
    */
-  SendAnnouncement2 = 40,
+  SendText = 40,
 
   /**
    * The operation to set the cssVar attribute of a player to change its appearance in the room gui.
@@ -1538,20 +1538,25 @@ declare class SetPlayerSkinEvent extends MooballEvent {
 /**
  * The event message structure that is created by the host to send announcement using the improved announcement api.
  */
-declare class SendAnnouncement2Event extends MooballEvent {
+declare class SendTextEvent extends MooballEvent {
+  
+  /**
+   * The type of the message. ( 0: chat, 1: announcement )
+   */
+  public type: uint8;
 
   /**
-   * The announcement message. ( max length = 1000 )
+   * The chat/announcement message. ( max length = 1000 )
    */
   public msg: string;
 
   /**
-   * The cssVar of the announcement message.
+   * The cssVar of the message.
    */
   public cssVar: string;
 
   /**
-   * The sound of the announcement message.
+   * The sound of the message.
    */
   public sound: string;
 
@@ -4208,16 +4213,17 @@ interface SandboxModeFunctions {
   setRunDefaultGameLogic(value: boolean): void;
 
   /**
-   * Sends an announcement using the improved announcement api.
+   * Sends an announcement/chat using the improved announcement api.
    * 
-   * @param msg The announcement message. ( max length = 1000 )
-   * @param cssVar The cssVar of the announcement message.
-   * @param sound The sound of the announcement message.
-   * @param targetId Id of the player who will receive this announcement. If this value is `null`, the announcement is sent to everyone.
+   * @param type The type of the message. ( 0: chat, 1: announcement )
+   * @param msg The message. ( max length = 1000 )
+   * @param cssVar The cssVar of the message.
+   * @param sound The sound of the message.
+   * @param targetId Id of the player who will receive this message. If this value is `null`, the message is sent to everyone.
    * 
    * @returns void.
    */
-  sendAnnouncement2(msg: string, cssVar?: string, sound?: string, targetId?: uint32): void;
+  sendText(type: uint8, msg: string, cssVar?: string, sound?: string, targetId?: uint32): void;
   
   /**
    * Updates the current skin(textureId) of a player.
@@ -7148,17 +7154,18 @@ interface HostTriggeredCallbacks {
   onRunDefaultGameLogicChange?(value: boolean, customData?: any): any,
 
   /**
-   * Called just after an announcement has been sent using the improved announcement api.
+   * Called just after an announcement/chat has been sent using the improved announcement api.
    * 
-   * @param msg The announcement message. ( max length = 1000 )
-   * @param cssVar The cssVar of the announcement message.
-   * @param sound The sound of the announcement message.
-   * @param targetId Id of the player who will receive this announcement. If this value is `null`, the announcement is sent to everyone.
+   * @param type The type of the message. ( 0: chat, 1: announcement )
+   * @param msg The message. ( max length = 1000 )
+   * @param cssVar The cssVar of the message.
+   * @param sound The sound of the message.
+   * @param targetId Id of the player who will receive this message. If this value is `null`, the message is sent to everyone.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onAnnouncement2?(msg: string, cssVar?: string, sound?: string, targetId?: uint32, customData?: any): any,
+  onText?(type: uint8, msg: string, cssVar?: string, sound?: string, targetId?: uint32, customData?: any): any,
   
   /**
    * Called just after the current skin(textureId) of a player has been updated.
@@ -8360,29 +8367,31 @@ interface HostTriggeredRoomConfigCallbacks {
   onAfterRunDefaultGameLogicChange?(value: boolean, customData?: any): void,
 
   /**
-   * Called just after an announcement has been sent using the improved announcement api.
+   * Called just after an chat/announcement has been sent using the improved announcement api.
    * 
-   * @param msg The announcement message. ( max length = 1000 )
-   * @param cssVar The cssVar of the announcement message.
-   * @param sound The sound of the announcement message.
-   * @param targetId Id of the player who will receive this announcement. If this value is `null`, the announcement is sent to everyone.
+   * @param type The type of the message. ( 0: chat, 1: announcement )
+   * @param msg The message. ( max length = 1000 )
+   * @param cssVar The cssVar of the message.
+   * @param sound The sound of the message.
+   * @param targetId Id of the player who will receive this message. If this value is `null`, the message is sent to everyone.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onBeforeAnnouncement2?(msg: string, cssVar?: string, sound?: string, targetId?: uint32): any,
+  onBeforeText?(type: uint8, msg: string, cssVar?: string, sound?: string, targetId?: uint32): any,
 
   /**
-   * Called just after an announcement has been sent using the improved announcement api.
+   * Called just after an chat/announcement has been sent using the improved announcement api.
    * 
-   * @param msg The announcement message. ( max length = 1000 )
-   * @param cssVar The cssVar of the announcement message.
-   * @param sound The sound of the announcement message.
-   * @param targetId Id of the player who will receive this announcement. If this value is `null`, the announcement is sent to everyone.
+   * @param type The type of the message. ( 0: chat, 1: announcement )
+   * @param msg The message. ( max length = 1000 )
+   * @param cssVar The cssVar of the message.
+   * @param sound The sound of the message.
+   * @param targetId Id of the player who will receive this message. If this value is `null`, the message is sent to everyone.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onAfterAnnouncement2?(msg: string, cssVar?: string, sound?: string, targetId?: uint32, customData?: any): void,
+  onAfterText?(type: uint8, msg: string, cssVar?: string, sound?: string, targetId?: uint32, customData?: any): void,
   
   /**
    * Called just after the current skin(textureId) of a player has been updated.
@@ -12477,15 +12486,16 @@ interface EventFactory {
   setRunDefaultGameLogic(value: boolean): SetRunDefaultGameLogicEvent;
   
   /**
-   * Creates a SendAnnouncement2Event object that can be used to send announcement using the improved announcement api.
+   * Creates a SendTextEvent object that can be used to send chat/announcement using the improved announcement api.
    * 
-   * @param msg The announcement message. ( max length = 1000 )
-   * @param cssVar The cssVar of the announcement message.
-   * @param sound The sound of the announcement message.
+   * @param type The type of the message. ( 0: chat, 1: announcement )
+   * @param msg The chat/announcement message. ( max length = 1000 )
+   * @param cssVar The cssVar of the message.
+   * @param sound The sound of the message.
    * 
-   * @returns An instance of SendAnnouncement2Event
+   * @returns An instance of SendTextEvent
    */
-  sendAnnouncement2(msg: string, cssVar?: string, sound?: string): SendAnnouncement2Event;
+  sendText(type: uint8, msg: string, cssVar?: string, sound?: string): SendTextEvent;
 
   /**
    * Creates a SendDirectionEvent object that can be used to set the player's current direction. room.state.directionActive must be true for this to work.

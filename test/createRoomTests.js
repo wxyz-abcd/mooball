@@ -405,7 +405,7 @@ Language.current = new englishLanguage(API);
         //#endregion Test functions
         function sendCommands()
         {
-          room.sendAnnouncement2(`Commands:\n${Object.keys(msgMap).join(",\n")}`, null, "announcement1", "sine");
+          room.sendText(1, `Commands:\n${Object.keys(msgMap).join(",\n")}`, null, "announcement1", "sine");
         }
         const msgMap = {
             "?":                      sendCommands,

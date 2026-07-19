@@ -503,9 +503,10 @@ Sets whether to use default game logic or not.
 
 `value: boolean`
 
-### `room.sendAnnouncement2(msg, cssVar?, sound?, targetId?): void`
-Sends an announcement using the improved announcement api.
+### `room.sendText(type, msg, cssVar?, sound?, targetId?): void`
+Sends an chat/announcement message using the improved announcement api.
 
+`type: uint8`
 `msg: string`
 `cssVar: string`
 `sound: string`
@@ -959,7 +960,7 @@ Called after the room's token has changed.
 ### `room.onAnnouncement = function(msg, color, style, sound) { }`
 Called just after an announcement was made by the host.
 
-### `room.onAnnouncement2 = function(msg, cssVar, sound, targetId) { }`
+### `room.onText = function(type, msg, cssVar, sound, targetId) { }`
 Called just after an improved announcement was sent.
 
 ### `room.onRoomPropertiesChange = function(props) { }`
