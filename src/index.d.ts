@@ -12831,9 +12831,7 @@ interface Query {
   /**
    * Finds the index of the first Vertex that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12842,14 +12840,12 @@ interface Query {
    * 
    * @returns Index of the found Vertex, or `-1` if it is not found. 
    */
-  getVertexIndexAtMapCoord(roomState: RoomState, p: Point, threshold: number): int;
+  getVertexIndexAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): int;
 
   /**
    * Finds the first Vertex that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12858,14 +12854,12 @@ interface Query {
    * 
    * @returns The found Vertex, or `undefined` if it is not found.
    */
-  getVertexAtMapCoord(roomState: RoomState, p: Point, threshold: number): Vertex | null;
+  getVertexAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): Vertex | null;
 
   /**
    * Finds the index of the first Segment that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12874,14 +12868,12 @@ interface Query {
    * 
    * @returns Index of the found Segment, or `-1` if it is not found.
    */
-  getSegmentIndexAtMapCoord(roomState: RoomState, p: Point, threshold: number): int;
+  getSegmentIndexAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): int;
   
   /**
    * Finds the first Segment that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12890,14 +12882,12 @@ interface Query {
    * 
    * @returns The found Segment, or `-1` if it is not found.
    */
-  getSegmentAtMapCoord(roomState: RoomState, p: Point, threshold: number): Segment | null;
+  getSegmentAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): Segment | null;
 
   /**
    * Finds the first Goal that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12906,14 +12896,12 @@ interface Query {
    * 
    * @returns The found Goal, or `undefined` if it is not found.
    */
-  getGoalIndexAtMapCoord(roomState: RoomState, p: Point, threshold: number): int;
+  getGoalIndexAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): int;
 
   /**
    * Finds the first Goal that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12922,14 +12910,12 @@ interface Query {
    * 
    * @returns The found Goal, or `undefined` if it is not found.
    */
-  getGoalAtMapCoord(roomState: RoomState, p: Point, threshold: number): Goal | null;
+  getGoalAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): Goal | null;
 
   /**
    * Finds the first Plane that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12938,14 +12924,12 @@ interface Query {
    * 
    * @returns The found Plane, or `undefined` if it is not found.
    */
-  getPlaneIndexAtMapCoord(roomState: RoomState, p: Point, threshold: number): int;
+  getPlaneIndexAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): int;
 
   /**
    * Finds the first Plane that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12954,14 +12938,12 @@ interface Query {
    * 
    * @returns The found Plane, or `undefined` if it is not found.
    */
-  getPlaneAtMapCoord(roomState: RoomState, p: Point, threshold: number): Plane | null;
+  getPlaneAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): Plane | null;
 
   /**
    * Finds the first Joint that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12970,14 +12952,12 @@ interface Query {
    * 
    * @returns The found Joint, or `undefined` if it is not found.
    */
-  getJointIndexAtMapCoord(roomState: RoomState, p: Point, threshold: number): int;
+  getJointIndexAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): int;
 
   /**
    * Finds the first Joint that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -12986,14 +12966,12 @@ interface Query {
    * 
    * @returns The found Joint, or `undefined` if it is not found.
    */
-  getJointAtMapCoord(roomState: RoomState, p: Point, threshold: number): Joint | null;
+  getJointAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): Joint | null;
 
   /**
    * Finds the index of the first Disc that includes any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -13001,14 +12979,12 @@ interface Query {
    * 
    * @returns Index of the found Disc, or `-1` if it is not found.
    */
-  getDiscIndexAtMapCoord(roomState: RoomState, p: Point): int;
+  getDiscIndexAtMapCoord(stadiumLike: IStadium, p: Point): int;
 
   /**
    * Finds the first Disc that includes any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -13016,14 +12992,12 @@ interface Query {
    * 
    * @returns The found Disc, or `undefined` if it is not found.
    */
-  getDiscAtMapCoord(roomState: RoomState, p: Point): Disc | null;
+  getDiscAtMapCoord(stadiumLike: IStadium, p: Point): Disc | null;
 
   /**
    * Finds the first spawn point that is near enough to any given point.
    * 
-   * @param roomState The state object to be queried. This object must come from inside a Room object. There are two ways of obtaining it:
-   *   - Normal room state: `room.state`.
-   *   - Extrapolated room state: `room.stateExt`.
+   * @param stadiumLike The stadium-like object to be queried. Might be room.state.stadium, room.gameState?.stadium, room.gameState?.physicsState, etc.
    * @param p The point's coordinates. This is an object that should have the following keys:
    *   - `x: number`: The x coordinate.
    *   - `y: number`: The y coordinate.
@@ -13032,7 +13006,7 @@ interface Query {
    * 
    * @returns The found spawn point's index and team id, or `[-1, -1]` if it is not found.
    */
-  getSpawnPointIndexAtMapCoord(roomState: RoomState, p: Point, threshold: number): int;
+  getSpawnPointIndexAtMapCoord(stadiumLike: IStadium, p: Point, threshold: number): int;
 }
 
 interface MainReturnType {

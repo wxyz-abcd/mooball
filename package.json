@@ -1,6 +1,6 @@
 {
   "name": "mooball",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "The official node.js API for mooball.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
