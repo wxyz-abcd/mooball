@@ -747,7 +747,12 @@ declare enum OperationType {
   /**
    * The operation to set the cssVar attribute of a player to change its appearance in the room gui.
    */
-  SetPlayerCssVar = 41
+  SetPlayerCssVar = 41,
+
+  /**
+   * The operation to set bar1, bar2, bar3 properties of a player to show a bar above the player disc while rendering it.
+   */
+  SetPlayerBarLevels = 42
 }
 
 
@@ -1581,6 +1586,32 @@ declare class SetPlayerCssVarEvent extends MooballEvent {
    * New cssVar value of the player.
    */
   public cssVar: string|null;
+}
+
+/**
+ * The event message structure that is created by the host to set bar1, bar2, bar3 properties of a player to show a bar above the player disc while rendering it.
+ */
+declare class SetPlayerBarLevelsEvent extends MooballEvent {
+
+  /**
+   * Id of the player whose bar values will be modified.
+   */
+  public playerId: uint32;
+
+  /**
+   * New bar1 value of the player.
+   */
+  public bar1: number;
+
+  /**
+   * New bar2 value of the player.
+   */
+  public bar2: number;
+
+  /**
+   * New bar3 value of the player.
+   */
+  public bar3: number;
 }
 
 /**
@@ -4246,6 +4277,18 @@ interface SandboxModeFunctions {
   setPlayerCssVar(id: uint32, cssVar: string|null): void;
   
   /**
+   * Sets bar1, bar2, bar3 properties of a player to show a bar above the player disc while rendering it.
+   * 
+   * @param id Id of the player whose bar values will be modified.
+   * @param bar1 New first bar value of the player. normal value range: 0<=bar1<=1. bar1<0 means do not change this value. bar1=NaN means hide the bar entirely.
+   * @param bar2 New first bar value of the player. normal value range: 0<=bar2<=1. bar2<0 means do not change this value. bar2=NaN means hide the bar entirely.
+   * @param bar3 New first bar value of the player. normal value range: 0<=bar3<=1. bar3<0 means do not change this value. bar3=NaN means hide the bar entirely.
+   * 
+   * @returns void.
+   */
+  setPlayerBarLevels(id: uint32, bar1: number, bar2: number, bar3: number): void;
+  
+  /**
    * Adds a new stadium object.
    * 
    * @param type Type of the object to be added.
@@ -6586,6 +6629,21 @@ type Player = {
    * The css variable name of this player that is used to render the player's name in the gui.
    */
   cssVar: string | null;
+
+  /**
+   * The first bar value of this player.
+   */
+  bar1: number;
+
+  /**
+   * The second bar value of this player.
+   */
+  bar2: number;
+
+  /**
+   * The third bar value of this player.
+   */
+  bar3: number;
 }
 
 /**
@@ -7188,6 +7246,19 @@ interface HostTriggeredCallbacks {
    * @returns void or a custom data to pass to the next callback.
    */
   onPlayerCssVarChange?(id: uint32, cssVar: string|null, customData?: any): any,
+  
+  /**
+   * Called just after the bar1, bar2, bar3 properties of a player has been changed.
+   * 
+   * @param id Id of the player whose bar values will be modified.
+   * @param bar1 New first bar value of the player. normal value range: 0<=bar1<=1. bar1<0 means do not change this value. bar1=NaN means hide the bar entirely.
+   * @param bar2 New first bar value of the player. normal value range: 0<=bar2<=1. bar2<0 means do not change this value. bar2=NaN means hide the bar entirely.
+   * @param bar3 New first bar value of the player. normal value range: 0<=bar3<=1. bar3<0 means do not change this value. bar3=NaN means hide the bar entirely.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onPlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): any,
   
   /**
    * Called just after a new stadium object has been added.
@@ -8434,6 +8505,31 @@ interface HostTriggeredRoomConfigCallbacks {
    * @returns void or a custom data to pass to the next callback.
    */
   onAfterPlayerCssVarChange?(id: uint32, cssVar: string|null, customData?: any): void,
+  
+  /**
+   * Called just after the bar1, bar2, bar3 properties of a player has been changed.
+   * 
+   * @param id Id of the player whose bar values will be modified.
+   * @param bar1 New first bar value of the player. normal value range: 0<=bar1<=1. bar1<0 means do not change this value. bar1=NaN means hide the bar entirely.
+   * @param bar2 New first bar value of the player. normal value range: 0<=bar2<=1. bar2<0 means do not change this value. bar2=NaN means hide the bar entirely.
+   * @param bar3 New first bar value of the player. normal value range: 0<=bar3<=1. bar3<0 means do not change this value. bar3=NaN means hide the bar entirely.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onBeforePlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number): any,
+  
+  /**
+   * Called just after the bar1, bar2, bar3 properties of a player has been changed.
+   * 
+   * @param id Id of the player whose bar values will be modified.
+   * @param bar1 New first bar value of the player. normal value range: 0<=bar1<=1. bar1<0 means do not change this value. bar1=NaN means hide the bar entirely.
+   * @param bar2 New first bar value of the player. normal value range: 0<=bar2<=1. bar2<0 means do not change this value. bar2=NaN means hide the bar entirely.
+   * @param bar3 New first bar value of the player. normal value range: 0<=bar3<=1. bar3<0 means do not change this value. bar3=NaN means hide the bar entirely.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onAfterPlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): void,
   
   /**
    * Called just after a new stadium object has been added.
@@ -12525,6 +12621,18 @@ interface EventFactory {
    * @returns An instance of SetPlayerCssVarEvent.
    */
   setPlayerCssVar(id: uint32, cssVar: string|null): SetPlayerCssVarEvent;
+  
+  /**
+   * Creates a SetPlayerBarLevelsEvent object that can be used to set bar1, bar2, bar3 properties of a player to show a bar above the player disc while rendering it.
+   * 
+   * @param id Id of the player whose bar values will be modified.
+   * @param bar1 New first bar value of the player. normal value range: 0<=bar1<=1. bar1<0 means do not change this value. bar1=NaN means hide the bar entirely.
+   * @param bar2 New first bar value of the player. normal value range: 0<=bar2<=1. bar2<0 means do not change this value. bar2=NaN means hide the bar entirely.
+   * @param bar3 New first bar value of the player. normal value range: 0<=bar3<=1. bar3<0 means do not change this value. bar3=NaN means hide the bar entirely.
+   * 
+   * @returns An instance of SetPlayerBarLevelsEvent.
+   */
+  setPlayerBarLevels(id: uint32, bar1: number, bar2: number, bar3: number): SetPlayerBarLevelsEvent;
   
   /**
    * Creates a StadiumAddObjectEvent object that can be used to add a new stadium object.

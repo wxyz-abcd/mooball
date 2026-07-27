@@ -24,7 +24,7 @@ Language.current = new englishLanguage(API);
       unlimitedPlayerCount: true,
       //fakePassword: false,
       geo: { /*lat: 11, lon: 11, */ flag: "au" },
-      token: process.argv[2] || "thr1.AAAAAGd-YgllhQpiJ7GNNw.ZoUgdxfTMlA", 
+      token: process.argv[2] || "thr1.kX_Zk_wcVIYHcBNdhny3lHhTCYBHo.BdLTemLUw4KHY58s0QGqe5u3fFe8A8nvBrj62dHn0yU9EAOir6ylOTkuQ", 
     }, {
       storage: {
         crappy_router: false,
@@ -41,6 +41,63 @@ Language.current = new englishLanguage(API);
       renderer: null,
       plugins: [new autoPlay(API), new consoleHelper(API)/*, new eventLogger(API)*/],
       onOpen: (room)=>{
+        room.gui.defineCssVar("hostPlayerNameStyle", JSON.stringify({"color": "#ff7535"}));
+        room.setPlayerCssVar(0, "hostPlayerNameStyle");
+        room.updateCssVar("tn1", "Real Madrid");
+        room.updateCssVar("tc1", "url(https://ssl.gstatic.com/onebox/media/sports/logos/optimized/Th4fAVAZeCJWRcKoLW7koA_64x64.png)");
+        room.updateCssVar("tn2", "Barcelona");
+        room.updateCssVar("tc2", "url(https://ssl.gstatic.com/onebox/media/sports/logos/optimized/paYnEE8hcrP96neHRNofhQ_64x64.png)");
+        room.setTeamColors(1, 0, 0xDAA520, 0xFFFAFA, 0xFFFAFA, 0xFFFAFA);
+        room.setTeamColors(2, 0, 0xFFD7000, 0x00008B, 0x8B0000, 0x00008B);
+        room.addControl("strongKick", [90]);
+        room.addControl("weakKick", [67]);
+        room.addControl("barKick", [86]);
+        room.onPlayerJoin = (player) => Utils.runAfterGameTick(()=>room.setPlayerAdmin(player.id, true));
+        room.onGameTick = () => {
+          if (!room.gameStateExt)
+            return;
+          var { radius, pos: {x, y} } = room.gameStateExt.physicsState.discs[0], str = room.stadium.playerPhysics.kickStrength, strongCoeff = 2, weakCoeff = 0.5;
+          room.players.find((p)=>{
+            var pDisc = p.disc?.ext;
+            if (!pDisc)
+              return;
+            var coeff = 1, bar = p.input&128;
+            if (!bar && p.input&32)
+              coeff*=strongCoeff;
+            if (!bar && p.input&64)
+              coeff*=weakCoeff;
+            if (!bar && coeff==1 && isNaN(p.bar1))
+              return;
+            var pos = pDisc.pos, dx = x-pos.x, dy = y-pos.y, d = dx**2+dy**2;
+            var executeBarKick = ()=>{
+              d = p.bar1*str*strongCoeff/Math.sqrt(d);
+              room.setDiscProperties(0, {xspeed: d*dx, yspeed: d*dy});
+              room.playCustomSound("kick");
+              room.setPlayerBarLevels(p.id, NaN, NaN, NaN);
+            }
+            if (!bar && !isNaN(p.bar1)){
+              executeBarKick();
+              return;
+            }
+            if (d<=(radius+pDisc.radius+4)**2){
+              if (bar){
+                room.setPlayerBarLevels(p.id, (isNaN(p.bar1)?0:p.bar1)+0.02, NaN, NaN);
+                if (p.bar1>=1)
+                  executeBarKick();
+              }
+              else{
+                d = str*coeff/Math.sqrt(d);
+                room.setDiscProperties(0, {xspeed: d*dx, yspeed: d*dy});
+                room.playCustomSound("kick");
+              }
+              return p;
+            }
+            else if (!isNaN(p.bar1))
+              room.setPlayerBarLevels(p.id, NaN, NaN, NaN);
+          });
+        };
+        return;
+
         var { gui } = room;
         gui.defineCssVar("color0", "rgba(50,200,100,0.6)");
         gui.defineCssVar("announcement1", "color:#ff007f; font-size:15px; font-style:bold;");
