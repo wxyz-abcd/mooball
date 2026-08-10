@@ -69,7 +69,8 @@ module.exports = function(API){
 			[ErrorCodes.PluginAlreadyExistsError, "Plugin already exists: $1"],
 			[ErrorCodes.LibraryAlreadyExistsError, "Library already exists: $1"],
 			[ErrorCodes.RateLimitReached, "Rate limit reached for client id: $1"],
-			[ErrorCodes.UnknownMessageType, "Unknown message type received from client id: $1"]
+			[ErrorCodes.UnknownMessageType, "Unknown message type received from client id: $1"],
+			[ErrorCodes.AnonymousJoinBlocked, "Joining anonymously is blocked"]
 		].reduce((x,y)=>{x[y[0]]=y[1];return x;},{})
 	};
 };

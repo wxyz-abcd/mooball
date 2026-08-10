@@ -69,7 +69,8 @@ module.exports = function(API){
 			[ErrorCodes.PluginAlreadyExistsError, "El complemento ya existe: $1"],
 			[ErrorCodes.LibraryAlreadyExistsError, "La biblioteca ya existe: $1"],
 			[ErrorCodes.RateLimitReached, "Se ha alcanzado el límite de velocidad para el ID de cliente: $1"],
-			[ErrorCodes.UnknownMessageType, "Se ha recibido un tipo de mensaje desconocido del ID de cliente: $1"]
+			[ErrorCodes.UnknownMessageType, "Se ha recibido un tipo de mensaje desconocido del ID de cliente: $1"],
+			[ErrorCodes.AnonymousJoinBlocked, "No se permite registrarse de forma anónima"]
 		].reduce((x,y)=>{x[y[0]]=y[1];return x;},{})
 	};
 };

@@ -41,6 +41,273 @@ Language.current = new englishLanguage(API);
       renderer: null,
       plugins: [new autoPlay(API), new consoleHelper(API)/*, new eventLogger(API)*/],
       onOpen: (room)=>{
+        const minEnergy = 0.5, maxEnergy = 1.0, energyDrainFrames = 60*0.75, fatigueProps = {sprintMin: 0.3, sprintDrain: 0.003, shootDrainCoeff: 0.08, waitGain: 0.0006}, ballZgravity = 0.0001;//0.0005
+        var ballZ = {coord: 0, speed: 0}, originalBallProps, ballKickCountInCurrentGameTick;
+        interval = setInterval(()=>room.extrapolate(), 1000/60);
+        var setBallZProps = (xspeed, yspeed, zCoord, zSpeed)=>{
+          Utils.runAfterGameTick(()=>{
+            var mask = (zCoord==0)?0:(CollisionFlags.red|CollisionFlags.blue|CollisionFlags.redKO|CollisionFlags.blueKO);
+            mask=~mask;
+            room.setDiscProperties(0, {xspeed, yspeed, cMask: originalBallProps.cMask&mask, cGroup: originalBallProps.cGroup&mask, radius: originalBallProps.radius*(1+zCoord)});
+            ballZ.coord = zCoord;
+            ballZ.speed = zSpeed;
+          });
+        };
+        var updateBallZ = ()=>{
+          Utils.runAfterGameTick(()=>{
+            var c = ballZ.coord+ballZ.speed, s = ballZ.speed-Math.max(ballZgravity, /*Math.abs(ballZ.speed)*0.075*/0);
+            if (c<=0){
+              c = 0;
+              s = 0;
+              room.setDiscProperties(0, {cMask: originalBallProps.cMask, cGroup: originalBallProps.cGroup, radius: originalBallProps.radius});
+            }
+            else{
+              var props = {radius: originalBallProps.radius*(1+1.25*c)}, mask = 0, cm, cg, b = room.getBall();
+              if (c>0.3){
+                mask|=CollisionFlags.kick;
+                if (c>0.5)
+                  mask|=CollisionFlags.score;
+                if (s>0){
+                  mask=~mask;
+                  cm = b.cMask&mask;
+                  cg = b.cGroup&mask;
+                }
+                else{
+                  cm = b.cMask|mask;
+                  cg = b.cGroup|mask;
+                }
+              }
+              if (cm!=b.cMask)
+                props.cMask = cm;
+              if (cg!=b.cGroup)
+                props.cGroup = cg;
+              room.setDiscProperties(0, props);
+            }
+            ballZ.coord = c;
+            ballZ.speed = s;
+          });
+        };
+        room.onRoomLink = (link)=>console.log("room link:", link);
+        room.onPlayerJoin = (player) => Utils.runAfterGameTick(()=>{
+          room.setPlayerAdmin(player.id, true);
+        });
+        room.onPlayerDiscCreated = (player) => {
+          player.sprint = false;
+          player.fatigue = 1;
+          Utils.runAfterGameTick(()=>{
+            room.setPlayerEnergy(player.id, {energy: minEnergy, kEnergyDrain: 0});
+            room.setPlayerBarLevels(player.id, NaN, player.fatigue, NaN);
+          });
+        };
+        room.onPositionsReset = () => {
+          setBallZProps(0, 0, 0, 0);
+          Utils.runAfterGameTick(()=>{
+            room.players.forEach((player)=>{
+              room.setPlayerEnergy(player.id, {energy: minEnergy, kEnergyDrain: 0});
+              player.sprint = false;
+            });
+          });
+        };
+        room.onOperationReceived = (type, msg) => {
+          if (type==OperationType.SetStadium){
+            msg.stadium.defaultStadiumId = 255;
+            msg.stadium.playerPhysics.acceleration *= 2;
+            msg.stadium.playerPhysics.energyMin = minEnergy;
+            msg.stadium.playerPhysics.energyMax = maxEnergy;
+            msg.stadium.playerPhysics.energyGain = 0;
+            msg.stadium.playerPhysics.energyDrain = (maxEnergy-minEnergy)/energyDrainFrames;
+            msg.stadium.playerPhysics.initialEnergy = minEnergy;
+            msg.stadium.playerPhysics.initialEnergyBar = true;
+          }
+          return true;
+        };
+        room.onGameStart = ()=>{
+          var {cMask, cGroup, radius} = room.gameState.physicsState.discs[0];
+          //cMask: ball, blue, blueko, red, redko, wall, 
+          //cGroup: ball, score, kick
+          originalBallProps = {cMask, cGroup, radius};
+        };
+        room.onPlayerBallKick = () => {
+          ballKickCountInCurrentGameTick++;
+        };
+        room.onPlayerInputChange = (id, value)=>{
+          var p = room.getPlayer(id);
+          var sprinting = p.input&512;
+          if (!sprinting && p.sprint){
+            room.setPlayerEnergy(p.id, {energy: minEnergy, kEnergyDrain: 0});
+            p.sprint = false;
+          }
+          else if (sprinting && !p.sprint && p.fatigue>fatigueProps.sprintMin){
+            room.setPlayerEnergy(p.id, {energy: maxEnergy, kEnergyDrain: 1});
+            p.sprint = true;
+          }
+        };
+        room.onGameTick = () => {
+          if (!room.gameStateExt)
+            return;
+          if (ballKickCountInCurrentGameTick>1 && Math.random()<0.6){
+            var powerCoeff = 0.5*(1+Math.random())*fatigueProps.shootDrainCoeff;
+            setBallZProps(null, null, powerCoeff, powerCoeff);
+          }
+          ballKickCountInCurrentGameTick = 0;
+          var { radius, pos: {x, y} } = room.gameStateExt.physicsState.discs[0], str = room.stadium.playerPhysics.kickStrength, strongCoeff = 2, weakCoeff = 0.65;
+          room.players.forEach((p)=>{
+            var pDisc = p.disc?.ext;
+            if (!pDisc)
+              return;
+            p.fatigue = p.sprint?Math.max((p.energy==minEnergy)?p.fatigue:(p.fatigue-fatigueProps.sprintDrain), 0):Math.min(p.fatigue+fatigueProps.waitGain, 1);
+            var coeff = 1, bars = p.input&384;
+            if (!bars && p.input&32)
+              coeff*=strongCoeff;
+            if (!bars && p.input&64)
+              coeff*=weakCoeff*(p.sprint?1.5:1);
+            if (!bars && Math.abs(coeff-1.3)<=0.31 && isNaN(p.bar1)){
+              if (p.bar2!=p.fatigue)
+                room.setPlayerBarLevels(p.id, -1, p.fatigue, -1);
+              return;
+            }
+            if (ballZ.coord>0)
+              return;
+            var pos = pDisc.pos, dx = x-pos.x, dy = y-pos.y, d = dx**2+dy**2;
+            var executeBarKick = ()=>{
+              var powerCoeff = p.bar1*fatigueProps.shootDrainCoeff;
+              if (p.fatigue<powerCoeff){
+                room.setPlayerBarLevels(p.id, NaN, p.fatigue, -1);
+                return;
+              }
+              d = p.bar1*(0.9+0.1*p.fatigue)*str*strongCoeff/Math.sqrt(d);
+              p.fatigue -= powerCoeff;
+              if (p.prevLob){
+                setBallZProps(d*dx, d*dy, powerCoeff, powerCoeff);
+                room.playCustomSound("kick");
+              }
+              else{
+                room.setDiscProperties(0, {xspeed: d*dx, yspeed: d*dy});
+                room.playCustomSound("kick");
+              }
+              room.setPlayerBarLevels(p.id, NaN, p.fatigue, -1);
+            }
+            if (!bars && !isNaN(p.bar1)){
+              executeBarKick();
+              return;
+            }
+            if (d<=(radius+pDisc.radius+4)**2){
+              if (bars){
+                p.prevLob = (p.input&256)>0;
+                room.setPlayerBarLevels(p.id, Math.min((isNaN(p.bar1)?0:p.bar1)+0.02, 1), p.fatigue, -1);
+                //if (p.bar1>=1)
+                  //executeBarKick();
+              }
+              else{
+                var c = coeff/strongCoeff;
+                if (p.fatigue<c*fatigueProps.shootDrainCoeff)
+                  return;
+                d = (0.9+0.1*p.fatigue)*str*coeff/Math.sqrt(d);
+                p.fatigue -= c*fatigueProps.shootDrainCoeff;
+                room.setDiscProperties(0, {xspeed: d*dx, yspeed: d*dy});
+                room.playCustomSound("kick");
+                if (p.bar2!=p.fatigue)
+                  room.setPlayerBarLevels(p.id, -1, p.fatigue, -1);
+              }
+              return;
+            }
+            if (!isNaN(p.bar1)){
+              room.setPlayerBarLevels(p.id, NaN, p.fatigue, -1);
+              return;
+            }
+            if (p.bar2!=p.fatigue)
+              room.setPlayerBarLevels(p.id, -1, p.fatigue, -1);
+          });
+          if (ballZ.coord>0)
+            updateBallZ();
+        };
+        room.setCurrentStadium(Utils.parseStadium(`{
+          "name" : "Big",
+          
+          "width" : 650,
+          "height" : 270,
+          
+          "spawnDistance" : 400,
+          
+          "bg" : {
+            "type" : "grass", 
+            "width" : 550, 
+            "height" : 240, 
+            "color": "5E5A33", 
+            "stripe1": "3E551E", 
+            "stripe2": "4F642C", 
+            "kickOffRadius": 80, 
+            "cornerRadius": 0, 
+            "bufferWidth": 30, 
+            "bufferHeight": 30, 
+            "innerRectWidth": 96.25, 
+            "innerRectHeight": 108, 
+            "outerRectWidth": 192.5, 
+            "outerRectHeight": 168, 
+            "penaltyBoxArcRadius": 118.80000000000001, 
+            "penaltyDistance": 137.5, 
+            "spotIndicatorRadius": 4 
+          },
+
+          "vertexes" : [
+            { "x" : 0, "y" : -270, "trait" : "kickOffBarrier" },
+            { "x" : 0, "y" : -80, "trait" : "kickOffBarrier" },
+            { "x" : 0, "y" : 80, "trait" : "kickOffBarrier" },
+            { "x" : 0, "y" : 270, "trait" : "kickOffBarrier" }
+          ],
+          
+          "segments" : [
+            { "v0" : 0, "v1" : 1, "trait" : "kickOffBarrier" },
+            { "v0" : 2, "v1" : 3, "trait" : "kickOffBarrier" },
+            
+            { "v0" : 1, "v1" : 2, "trait" : "kickOffBarrier", "curve" : 180, "cGroup" : ["redKO"], "cMask": ["red", "blue"] },
+            { "v0" : 2, "v1" : 1, "trait" : "kickOffBarrier", "curve" : 180, "cGroup" : ["blueKO"], "cMask": ["red", "blue"] },
+          ],
+          
+          "goals" : [
+            { "type": 1, "p0" : [550, -80], "p1" : [550, 80], "team" : "blue" },
+            { "type": 1, "p0" : [-550, -80], "p1" : [-550, 80], "team" : "red" }
+          ],
+          
+          "discs" : [],
+          
+          "planes" : [
+            { "normal" : [ 0, 1], "dist" : -270, "bCoef" : 0, "cMask": ["ball"] },
+            { "normal" : [ 0,-1], "dist" : -270, "bCoef" : 0, "cMask": ["ball"] },
+
+            { "normal" : [ 1, 0], "dist" : -650, "bCoef" : 0, "cMask": ["ball"] },
+            { "normal" : [-1, 0], "dist" : -650, "bCoef" : 0, "cMask": ["ball"] }
+          ],
+          
+          "traits" : {
+            "kickOffBarrier" : { "vis" : false, "bCoef" : 0.1, "cGroup" : ["redKO", "blueKO"], "cMask" : ["red", "blue"] }
+          }
+        }`));
+        room.gui.defineCssVar("hostPlayerNameStyle", JSON.stringify({"color": "#ff7535"}));
+        room.setPlayerCssVar(0, "hostPlayerNameStyle");
+        room.updateCssVar("tn1", "Real Madrid");
+        room.updateCssVar("tc1", "url(https://ssl.gstatic.com/onebox/media/sports/logos/optimized/Th4fAVAZeCJWRcKoLW7koA_64x64.png)");
+        room.updateCssVar("tn2", "Barcelona");
+        room.updateCssVar("tc2", "url(https://ssl.gstatic.com/onebox/media/sports/logos/optimized/paYnEE8hcrP96neHRNofhQ_64x64.png)");
+        room.setTeamColors(1, 0, 0xDAA520, 0xFFFAFA, 0xFFFAFA, 0xFFFAFA);
+        room.setTeamColors(2, 0, 0xFFD7000, 0x00008B, 0x8B0000, 0x00008B);
+        room.addControl("strongKick", [90]);//Z
+        room.addControl("weakKick", [67]);//C
+        room.addControl("barKick", [86]);//V
+        room.addControl("lobKick", [70]);//F
+        room.addControl("sprint", [69]);//E
+
+        return;
+
+
+
+
+
+
+
+
+
+
         var { gui } = room;
         gui.defineCssVar("color0", "rgba(50,200,100,0.6)");
         gui.defineCssVar("announcement1", "color:#ff007f; font-size:15px; font-style:bold;");

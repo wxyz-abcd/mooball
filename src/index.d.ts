@@ -747,7 +747,17 @@ declare enum OperationType {
   /**
    * The operation to set the cssVar attribute of a player to change its appearance in the room gui.
    */
-  SetPlayerCssVar = 41
+  SetPlayerCssVar = 41,
+
+  /**
+   * The operation to set the bar levels of a player.
+   */
+  SetPlayerBarLevels = 42,
+  
+  /**
+   * The operation to send emote.
+   */
+  SendEmote = 43
 }
 
 
@@ -1165,6 +1175,24 @@ declare class SendChatEvent extends MooballEvent {
   public readonly targetId: uint16 | null;
 }
 
+
+/**
+ * The event message structure that is created when an emote is sent.
+ */
+declare class SendEmoteEvent extends MooballEvent {
+
+  /**
+   * Id of the emote that is sent.
+   */
+  public emoteId: uint8;
+
+  /**
+   * Id of the player who will receive the chat. 
+   * If `null`, everyone receives it. Can not be modified.
+   */
+  public readonly targetId: uint16 | null;
+}
+
 /**
  * The event message structure that is created when a player's input changes.
  */
@@ -1444,7 +1472,7 @@ declare class SetPlayerEnergyEvent extends MooballEvent {
   public id: uint32;
 
   /**
-   * New values. Order of values is supposed to be: [energy, kEnergyGain, kEnergyDrain]. null means no change for each value.
+   * New values. Order of values is supposed to be: [bar, energy, kEnergyGain, kEnergyDrain]. null means no change for each value.
    */
   public data: number[];
 }
@@ -1455,7 +1483,7 @@ declare class SetPlayerEnergyEvent extends MooballEvent {
 declare class SetPlayerDirectionEvent extends MooballEvent {
 
   /**
-   * Id of the player whose energy values will be modified.
+   * Id of the player whose direction value will be modified.
    */
   public id: uint32;
 
@@ -1506,6 +1534,32 @@ declare class UpdateCssVarEvent extends MooballEvent {
    * New value of the css variable.
    */
   public value: string;
+}
+
+/**
+ * The event message structure that is created by the host to manually change the bar levels of an individual player. 
+ */
+declare class SetPlayerBarLevelsEvent extends MooballEvent {
+
+  /**
+   * Id of the player whose bar levels will be modified.
+   */
+  public id: uint32;
+
+  /**
+   * Value of the first bar (-1: dismiss, NaN: disable)
+   */
+  public bar1: number;
+
+  /**
+   * Value of the second bar (-1: dismiss, NaN: disable)
+   */
+  public bar2: number;
+
+  /**
+   * Value of the third bar (-1: dismiss, NaN: disable)
+   */
+  public bar3: number;
 }
 
 /**
@@ -1676,11 +1730,6 @@ type CreateRoomParams = {
    * Endpoint of the room.
    */
   endpoint: string|null;
-
-  /**
-   * Whether to hide the owner of the room or not.
-   */
-  hideIdentity: boolean;
 
   /**
    * Called when a exception is thrown by one of the client connections. playerId is the id of the player that caused the exception. The player's connection will be closed just after this callback is executed.
@@ -1994,6 +2043,15 @@ interface SandboxRoom extends SandboxRoomBase {
    * @returns `true` if succeeded, `false` otherwise.
    */
   startRecording(): boolean;
+
+  /**
+   * Save a short clip of the latest moments of the current replay that is being recorded.
+   * 
+   * @param ticks Number of game ticks to be recorded.
+   * 
+   * @returns The recorded replay data if succeeded, `null` otherwise.
+   */
+  clipRecording(ticks: uint32): Promise<Uint8Array> | null;
 
   /**
    * Stop recording replay. Recording should be started before calling this.
@@ -4289,16 +4347,28 @@ interface SandboxModeFunctions {
    * Manually changes the energy of an individual player.
    * 
    * @param id Id of the player whose energy values will be modified.
-   * @param data New values. Order of values is supposed to be: [energy, kEnergyGain, kEnergyDrain]. null means no change for each value.
+   * @param data New values.
    * 
    * @returns void.
    */
-  setPlayerEnergy(id: uint32, data: number[]): void;
+  setPlayerEnergy(id: uint32, data: {bar?: boolean, energy?: number, kEnergyGain?: number, kEnergyDrain?: number}): void;
+  
+  /**
+   * Manually changes the bar levels of an individual player.
+   * 
+   * @param id Id of the player whose bar levels will be modified.
+   * @param bar1 Value of the first bar (-1: dismiss, NaN: disable)
+   * @param bar2 Value of the second bar (-1: dismiss, NaN: disable)
+   * @param bar3 Value of the third bar (-1: dismiss, NaN: disable)
+   * 
+   * @returns void.
+   */
+  setPlayerBarLevels(id: uint32, bar1: number, bar2: number, bar3: number): void;
   
   /**
    * Manually change the direction of an individual player. room.state.directionActive must be true for this to work.
    * 
-   * @param id Id of the player whose energy values will be modified.
+   * @param id Id of the player whose direction value will be modified.
    * @param value New direction value of the player.
    * 
    * @returns void.
@@ -5516,11 +5586,6 @@ interface RoomBase {
   readonly unlimitedPlayerCount: boolean;
 
   /**
-   * Whether to hide the owner of this room or not. read-only. host-only.
-   */
-  readonly hideIdentity: boolean;
-
-  /**
    * The current recaptcha token of the room. If changed, it will also refresh the room link. host-only.
    */
   token: string;
@@ -5529,6 +5594,16 @@ interface RoomBase {
    * The current join-recaptcha status of the room. host-only.
    */
   requireRecaptcha: boolean;
+
+  /**
+   * Whether to block anonymous users or not while they are joining the room. host-only.
+   */
+  blockAnonymousUsers: boolean;
+
+  /**
+   * Whether to hide the owner of the room or not. host-only.
+   */
+  hideOwner: boolean;
 
   /**
    * For a host room, can be `true`. For a client room, can be a callback function with parameters `hostRoomState` and `clientRoomState`. (Look at https://github.com/wxyz-abcd/mooball/tree/main/examples/other/compareStates.js for the default implementation of desync checking.) This callback is called whenever a desync occurs if the host room's `debugDesync` value is also `true`. Defaults to `null`.
@@ -5556,7 +5631,6 @@ interface RoomBase {
    *   - `showInRoomList: boolean`: Whether to show this room in the room list or not.
    *   - `tintColor: uint32`: Background tint color(to show in room list) of this room.
    *   - `thumbnail: string`: Thumbnail(to show in room list) of this room.
-   *   - `hideIdentity: booolean`: Whether to hide the owner of this room or not.
    * 
    * @returns void.
    */
@@ -5731,6 +5805,16 @@ interface RoomBase {
    * @returns void.
    */
   sendChat(msg: string, targetId: uint16 | null): void;
+
+  /**
+   * Sends an emote.
+   * 
+   * @param emoteId Id of the emote that is desired to be sent.
+   * @param targetId If `null`, the emote is sent to everyone; otherwise, only the player whose id is `targetId` will receive this emote. host-only.
+   * 
+   * @returns void.
+   */
+  sendEmote(emoteId: uint8, targetId: uint16 | null): void;
 
   /**
    * Sends an announcement message. host-only.
@@ -6086,6 +6170,15 @@ interface RoomBase {
   startRecording(): boolean;
 
   /**
+   * Save a short clip of the latest moments of the current replay that is being recorded.
+   * 
+   * @param ticks Number of game ticks to be recorded.
+   * 
+   * @returns The recorded replay data if succeeded, `null` otherwise.
+   */
+  clipRecording(ticks: uint32): Promise<Uint8Array> | null;
+
+  /**
    * Stop recording replay. Recording should be started before calling this.
    * 
    * @returns The recorded replay data if succeeded, `null` otherwise.
@@ -6434,6 +6527,11 @@ declare class PlayerPhysics {
    * The initial energy of each player. (default value = 1)
    */
   initialEnergy: number;
+
+  /**
+   * Whether to show energy bar or not for each player. (default value = false)
+   */
+  initialEnergyBar: boolean;
 }
 
 /**
@@ -6561,6 +6659,11 @@ type Player = {
    * The current energy level of this player. Should be between 0 and 1. Defaults to 1.
    */
   energy: number;
+
+  /**
+   * Whether to show or hide the energy bar for this player. Defaults to false.
+   */
+  energyBar: boolean;
 
   /**
    * The energy increment coefficient of this player when player.input==0. Should be between 0 and 1. Defaults to 0.
@@ -6915,9 +7018,9 @@ type RoomDataDetails = {
   lon: number;
 
   /**
-   * Whether this room is password-protected or not.
+   * A bitfield that contains 4 bits of information. (password: 1, recaptchaEnabled: 2, blockAnonymousUsers: 4, hideOwner: 8)
    */
-  password: boolean;
+  flags: number;
 
   /**
    * Maximum allowed number of players in this room.
@@ -6940,7 +7043,22 @@ type RoomDataDetails = {
   thumbnail: string;
 
   /**
-   * Whether to hide the owner of this room or not.
+   * [Property] Whether this room is password-protected or not.
+   */
+  password: boolean;
+
+  /**
+   * [Property] Whether this room is captcha-protected or not.
+   */
+  recaptchaEnabled: boolean;
+  
+  /**
+   * [Property] Whether anonymous users are blocked or not.
+   */
+  blockAnonymousUsers: boolean;
+
+  /**
+   * [Property] Whether to hide the owner of this room or not.
    */
   hideOwner: boolean;
 }
@@ -7033,6 +7151,26 @@ interface HostOnlyCallbacks {
    * @returns void or a custom data to pass to the next callback.
    */
   onRoomRecaptchaModeChange?(on: boolean, customData?: any): any;
+
+  /**
+   * Called just after the room's blockAnonymousUsers value was changed using `room.blockAnonymousUsers = on`.
+   * 
+   * @param on The new value; whether to block anonymous users or not while joining the room.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onRoomAnonymousUsersBlockedChange?(on: boolean, customData?: any): any;
+
+  /**
+   * Called just after the room's hideOwner value was changed using `room.hideOwner = on`.
+   * 
+   * @param on The new value; whether to hide room's owner or not.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onRoomOwnerHiddenChange?(on: boolean, customData?: any): any;
 
   /**
    * Called just a little after the room's token was changed using `room.token = value`.
@@ -7247,7 +7385,7 @@ interface HostTriggeredCallbacks {
    * Called just after the energy of an individual player has been altered manually.
    * 
    * @param id Id of the player whose energy values will be modified.
-   * @param data New values. Order of values is supposed to be: [energy, kEnergyGain, kEnergyDrain]. null means no change for each value.
+   * @param data New values. Order of values is supposed to be: [bar, energy, kEnergyGain, kEnergyDrain]. null means no change for each value. bar = true/false to show/hide the energy bar.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void or a custom data to pass to the next callback.
@@ -7346,6 +7484,19 @@ interface HostTriggeredCallbacks {
    * @returns void or a custom data to pass to the next callback.
    */
   onTeamScoreChange?(teamId: uint8, value: number, customData?: any): any,
+  
+  /**
+   * Called just after the bar levels of an individual player has been altered manually.
+   * 
+   * @param id Id of the player whose bar levels will be modified.
+   * @param bar1 Value of the first bar (-1: dismiss, NaN: disable)
+   * @param bar2 Value of the second bar (-1: dismiss, NaN: disable)
+   * @param bar3 Value of the third bar (-1: dismiss, NaN: disable)
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onPlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): any,
 }
 
 /**
@@ -7708,7 +7859,7 @@ interface CommonCallbacks {
   /**
    * Called just after the direction of an individual player was changed. room.state.directionActive must be true for this to work.
    * 
-   * @param id Id of the player whose energy values will be modified.
+   * @param id Id of the player whose direction value will be modified.
    * @param value New direction value of the player.
    * 
    * @returns void or a custom data to pass to the next callback.
@@ -7833,6 +7984,17 @@ interface CommonCallbacks {
    * @returns void or a custom data to pass to the next callback.
    */
   onPlayerChat?(id: uint16, message: string, customData?: any): any,
+
+  /**
+   * Called just after an emote has been received.
+   * 
+   * @param id Id of the player who has sent the emote.
+   * @param emoteId Id of the emote.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onPlayerEmote?(id: uint16, emoteId: uint8, customData?: any): any,
 
   /**
    * Called just after a player's input has been changed.
@@ -8146,6 +8308,44 @@ interface HostOnlyRoomConfigCallbacks {
   onAfterRoomRecaptchaModeChange?(on: boolean, customData?: any): void
 
   /**
+   * Called just after the room's blockAnonymousUsers value was changed using `room.blockAnonymousUsers = on`.
+   * 
+   * @param on The new value; whether to block anonymous users or not while joining the room.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onBeforeRoomAnonymousUsersBlockedChange?(on: boolean): any;
+
+  /**
+   * Called just after the room's blockAnonymousUsers value was changed using `room.blockAnonymousUsers = on`.
+   * 
+   * @param on The new value; whether to block anonymous users or not while joining the room.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void.
+   */
+  onAfterRoomAnonymousUsersBlockedChange?(on: boolean, customData?: any): void;
+
+  /**
+   * Called just after the room's hideOwner value was changed using `room.hideOwner = on`.
+   * 
+   * @param on The new value; whether to hide room's owner or not.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onBeforeRoomOwnerHiddenChange?(on: boolean): any;
+
+  /**
+   * Called just after the room's hideOwner value was changed using `room.hideOwner = on`.
+   * 
+   * @param on The new value; whether to hide room's owner or not.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void.
+   */
+  onAfterRoomOwnerHiddenChange?(on: boolean, customData?: any): void;
+
+  /**
    * Called just a little after the room's token was changed using `room.token = value`.
    * 
    * @param token The new token of the room.
@@ -8362,7 +8562,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value Whether the default game logic is active(1) or passive(0).
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterRunDefaultGameLogicChange?(value: boolean, customData?: any): void,
 
@@ -8389,7 +8589,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param targetId Id of the player who will receive this message. If this value is `null`, the message is sent to everyone.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterText?(type: uint8, msg: string, cssVar?: string, sound?: string, targetId?: uint32, customData?: any): void,
   
@@ -8410,7 +8610,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param skin New skin value of the player.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterPlayerSkinChange?(id: uint32, skin: Texture|null, customData?: any): void,
   
@@ -8431,7 +8631,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param cssVar New cssVar value of the player.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterPlayerCssVarChange?(id: uint32, cssVar: string|null, customData?: any): void,
   
@@ -8452,7 +8652,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value An object that is supposed to contain all parameters required to add that type of object.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterStadiumAddObject?(type: uint8, value: object, customData?: any): void,
   
@@ -8475,7 +8675,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value An object that is supposed to contain all parameters required to update that type of object.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterStadiumUpdateObject?(type: uint8, id: uint16, value: object, customData?: any): void,
   
@@ -8496,7 +8696,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param id Id of the object to be removed.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterStadiumRemoveObject?(type: uint8, id: uint16, customData?: any): void,
   
@@ -8515,7 +8715,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value Whether the game will be paused(1) or resumed(0).
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterClockPausedChange?(value: number, customData?: any): void,
   
@@ -8534,7 +8734,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value New directionActive value.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterDirectionActiveChange?(value: number, customData?: any): void,
   
@@ -8542,7 +8742,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * Called just after the energy of an individual player has been altered manually.
    * 
    * @param id Id of the player whose energy values will be modified.
-   * @param data New values. Order of values is supposed to be: [energy, kEnergyGain, kEnergyDrain]. null means no change for each value.
+   * @param data New values. Order of values is supposed to be: [bar, energy, kEnergyGain, kEnergyDrain]. null means no change for each value. bar = true/false to show/hide the energy bar.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
@@ -8552,10 +8752,10 @@ interface HostTriggeredRoomConfigCallbacks {
    * Called just after the energy of an individual player has been altered manually.
    * 
    * @param id Id of the player whose energy values will be modified.
-   * @param data New values. Order of values is supposed to be: [energy, kEnergyGain, kEnergyDrain]. null means no change for each value.
+   * @param data New values. Order of values is supposed to be: [bar, energy, kEnergyGain, kEnergyDrain]. null means no change for each value. bar = true/false to show/hide the energy bar.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterPlayerEnergyChange?(id: uint32, data: number[], customData?: any): void,
   
@@ -8576,7 +8776,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param params Parameters for the specific operation.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterControls?(type: uint8, params: any[], customData?: any): void,
   
@@ -8597,7 +8797,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value New value of the css variable.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterUpdateCssVar?(name: string, value: string, customData?: any): void,
   
@@ -8616,7 +8816,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param soundName Name of the sound to be played.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterPlayCustomSound?(soundName: string, customData?: any): void,
   
@@ -8635,7 +8835,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param name The new room name.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterRoomNameChange?(name: string, customData?: any): void,
 
@@ -8654,7 +8854,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value New elapsed time value.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterElapsedTimeChange?(value: number, customData?: any): void,
   
@@ -8673,7 +8873,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value New max goal ticks value.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterMaxGoalTicksChange?(value: number, customData?: any): void,
   
@@ -8692,7 +8892,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value New max pause ticks value.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterMaxPauseTicksChange?(value: number, customData?: any): void,
   
@@ -8711,7 +8911,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value New max end ticks value.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterMaxEndTicksChange?(value: number, customData?: any): void,
   
@@ -8732,9 +8932,34 @@ interface HostTriggeredRoomConfigCallbacks {
    * @param value New score for the team.
    * @param customData the custom data that was returned from the previous callback.
    * 
-   * @returns void or a custom data to pass to the next callback.
+   * @returns void.
    */
   onAfterTeamScoreChange?(teamId: uint8, value: number, customData?: any): void
+  
+  /**
+   * Called just after the bar levels of an individual player has been altered manually.
+   * 
+   * @param id Id of the player whose bar levels will be modified.
+   * @param bar1 Value of the first bar (-1: dismiss, NaN: disable)
+   * @param bar2 Value of the second bar (-1: dismiss, NaN: disable)
+   * @param bar3 Value of the third bar (-1: dismiss, NaN: disable)
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onBeforePlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number): any,
+  
+  /**
+   * Called just after the bar levels of an individual player has been altered manually.
+   * 
+   * @param id Id of the player whose bar levels will be modified.
+   * @param bar1 Value of the first bar (-1: dismiss, NaN: disable)
+   * @param bar2 Value of the second bar (-1: dismiss, NaN: disable)
+   * @param bar3 Value of the third bar (-1: dismiss, NaN: disable)
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void.
+   */
+  onAfterPlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): any,
 }
 
 
@@ -9379,7 +9604,7 @@ interface CommonRoomConfigCallbacks {
   /**
    * Called just after the direction of an individual player was changed. room.state.directionActive must be true for this to work.
    * 
-   * @param id Id of the player whose energy values will be modified.
+   * @param id Id of the player whose direction value will be modified.
    * @param value New direction value of the player.
    * 
    * @returns void or a custom data to pass to the next callback.
@@ -9389,7 +9614,7 @@ interface CommonRoomConfigCallbacks {
   /**
    * Called just after the direction of an individual player was changed. room.state.directionActive must be true for this to work.
    * 
-   * @param id Id of the player whose energy values will be modified.
+   * @param id Id of the player whose direction value will be modified.
    * @param value New direction value of the player.
    * @param customData the custom data that was returned from the previous callback.
    * 
@@ -9623,6 +9848,27 @@ interface CommonRoomConfigCallbacks {
    * @returns void.
    */
   onAfterPlayerChat?(id: uint16, message: string, customData?: any): void,
+
+  /**
+   * Called just after an emote has been received.
+   * 
+   * @param id Id of the player who has sent the emote.
+   * @param emoteId Id of the emote.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onBeforePlayerEmote?(id: uint16, emoteId: uint8): any,
+
+  /**
+   * Called just after an emote has been received.
+   * 
+   * @param id Id of the player who has sent the emote.
+   * @param emoteId Id of the emote.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void.
+   */
+  onAfterPlayerEmote?(id: uint16, emoteId: uint8, customData?: any): void,
 
   /**
    * Called just after a player's input has been changed.
@@ -10672,6 +10918,11 @@ declare enum E_ErrorCodes {
    * "Unknown message type received from client id: $1"
    */
   UnknownMessageType = 63,
+
+  /**
+   * "Joining anonymously is blocked"
+   */
+  AnonymousJoinBlocked = 64,
 }
 
 
@@ -11988,8 +12239,25 @@ interface Utils {
    * @returns A Promise that resolves to an object that contains `roomId`, (`roomEndpoint`) and `newToken` keys. The promise is rejected if an error occurs.
    */
   generateRoomId(params: GenerateRoomIdParams): Promise<GenerateRoomIdReturnValue>;
-}
 
+  /**
+   * Parses the given string and generates the Texture that it represents.
+   * 
+   * @param str The string to be parsed as a Texture.
+   * 
+   * @returns A new Texture instance.
+   */
+  strToTexture(str: string): Texture;
+
+  /**
+   * Returns the string representation of the given Texture.
+   * 
+   * @param texture A Texture instance.
+   * 
+   * @returns The string representation of the given Texture.
+   */
+  textureToStr(texture: Texture): string;
+}
 
 type Room = {
 
@@ -12010,7 +12278,6 @@ type Room = {
    *   - `tintColor: int`: Background tint color(to show in room list) of the room.
    *   - `thumbnail: string|null`: Thumbnail(to show in room list) of the room.
    *   - `endpoint: string|null`: Endpoint of the room.
-   *   - `hideIdentity: boolean`: Whether to hide the owner of the room or not.
    *   - `onError: Function(error: HBError, playerId: int)`: Called when a exception is thrown by one of the client connections. playerId is the id of the player that caused the exception. The player's connection will be closed just after this callback is executed.
    * @param commonParams An object that might have the following keys:
    *   - `storage`: An object that stores information about the current player preferences. It may consist of these keys:
@@ -12192,6 +12459,16 @@ interface EventFactory {
    * @returns An instance of SendChatEvent.
    */
   sendChat(msg: string): SendChatEvent;
+
+  /**
+   * Creates a SendEmoteEvent object that can be used to trigger a sendEmote event.
+   * Returning event's byId is also required to be set before it can be used. 
+   * 
+   * @param emoteId Id of the emote to send.
+   * 
+   * @returns An instance of SendEmoteEvent.
+   */
+  sendEmote(emoteId: uint8): SendEmoteEvent;
 
   /**
    * Creates a JoinRoomEvent object that can be used to trigger a joinRoom event.
@@ -12570,16 +12847,16 @@ interface EventFactory {
    * Creates a SetPlayerEnergyEvent object that can be used to manually change the energy of an individual player.
    * 
    * @param id Id of the player whose energy values will be modified.
-   * @param data New values. Order of values is supposed to be: [energy, kEnergyGain, kEnergyDrain]. null means no change for each value.
+   * @param data New values.
    * 
    * @returns An instance of SetPlayerEnergyEvent.
    */
-  setPlayerEnergy(id: uint32, data: number[]): SetPlayerEnergyEvent;
+  setPlayerEnergy(id: uint32, data: {bar?: boolean, energy?: number, kEnergyGain?: number, kEnergyDrain?: number}): SetPlayerEnergyEvent;
   
   /**
    * Creates a SetPlayerDirectionEvent object that can be used to  manually change the direction of an individual player. room.state.directionActive must be true for this to work.
    * 
-   * @param id Id of the player whose energy values will be modified.
+   * @param id Id of the player whose direction value will be modified.
    * @param value New direction value of the player.
    * 
    * @returns An instance of SetPlayerDirectionEvent.
@@ -12687,6 +12964,18 @@ interface EventFactory {
    * @returns An instance of PlayCustomSoundEvent.
    */
   playCustomSound(soundName: string): PlayCustomSoundEvent;
+  
+  /**
+   * Creates a SetPlayerBarLevelsEvent object that can be used to manually change the bar levels of an individual player.
+   * 
+   * @param id Id of the player whose bar levels will be modified.
+   * @param bar1 Value of the first bar (-1: dismiss, NaN: disable)
+   * @param bar2 Value of the second bar (-1: dismiss, NaN: disable)
+   * @param bar3 Value of the third bar (-1: dismiss, NaN: disable)
+   * 
+   * @returns An instance of SetPlayerBarLevelsEvent.
+   */
+  setPlayerBarLevels(id: uint32, bar1: number, bar2: number, bar3: number): SetPlayerBarLevelsEvent;
 }
 
 

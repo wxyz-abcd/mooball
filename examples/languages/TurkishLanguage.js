@@ -69,7 +69,8 @@ module.exports = function(API){
 			[ErrorCodes.PluginAlreadyExistsError, "Eklenti zaten mevcut: $1"],
 			[ErrorCodes.LibraryAlreadyExistsError, "Kütüphane zaten mevcut: $1"],
 			[ErrorCodes.RateLimitReached, "İstemci kimliği için hız sınırına ulaşıldı: $1"],
-			[ErrorCodes.UnknownMessageType, "İstemci kimliğinden bilinmeyen mesaj türü alındı: $1"]
+			[ErrorCodes.UnknownMessageType, "İstemci kimliğinden bilinmeyen mesaj türü alındı: $1"],
+			[ErrorCodes.AnonymousJoinBlocked, "Anonim olarak katılım engellenmiştir"]
 		].reduce((x,y)=>{x[y[0]]=y[1];return x;},{})
 	};
 };
