@@ -7076,7 +7076,13 @@ type RoomData = {
   /**
    * Endpoint of this room. You have to use this value in `Room.join`.
    */
-  endpoint: string;
+  endpoint: string | null;
+
+  /**
+   * The community data linked to this room, where;
+   * c = community name, and r = room name.
+   */
+  communityData: { c: string, r: string } | null;
 
   /**
    * Owner of this room.
@@ -12262,12 +12268,14 @@ interface Utils {
 type Room = {
 
   /**
-   * Creates a room with given parameters.
+   * Creates a room with given parameters. Just one of token, endpoint or ctoken parameters must not be null.
    * 
    * @param createParams An object that might have the following keys:
    *   - `name: string`: Name of the room.
    *   - `password: string | null`: A password string to protect the room, or `null` for no password.
-   *   - `token: string`: In order to create a room, we have to solve a recaptcha challenge and write the resulting token into this key. The recaptcha token can be originally obtained from `https://moo-hoo.com/mooball/headlesstoken`. However, this url will be different while using a custom backend server.
+   *   - `token: string | null`: In order to create an anonymous room, we have to solve a recaptcha challenge and write the resulting token into this key. The recaptcha token can be originally obtained from `https://moo-hoo.com/mooball/headlesstoken`. However, this url will be different while using a custom backend server.
+   *   - `endpoint: string | null`: Endpoint of the room. (Only the owner of the endpoint can create the room.)
+   *   - `ctoken: string | null`: Special community token for community owners to be able to create their community rooms.
    *   - `noPlayer: boolean`: Determines whether a player object will be created for the room host or not.
    *   - `geo: GeoLocation`: The geolocation value of the room about to be created.
    *   - `playerCount: int | null`: If set to an `int`, fixes the current player count to this specific value.
@@ -12276,8 +12284,7 @@ type Room = {
    *   - `fakePassword: boolean | null`: If set to `true` or `false`, the room will set its password-protected status to your value. Passing `null` disables this behaviour.
    *   - `showInRoomList: boolean`: Whether to show this room in the room list or not.
    *   - `tintColor: int`: Background tint color(to show in room list) of the room.
-   *   - `thumbnail: string|null`: Thumbnail(to show in room list) of the room.
-   *   - `endpoint: string|null`: Endpoint of the room.
+   *   - `thumbnail: string | null`: Thumbnail(to show in room list) of the room.
    *   - `onError: Function(error: HBError, playerId: int)`: Called when a exception is thrown by one of the client connections. playerId is the id of the player that caused the exception. The player's connection will be closed just after this callback is executed.
    * @param commonParams An object that might have the following keys:
    *   - `storage`: An object that stores information about the current player preferences. It may consist of these keys:
@@ -12309,10 +12316,16 @@ type Room = {
   create(createParams: CreateRoomParams, commonParams: CommonNetworkRoomParams): CommonNetworkRoomReturnType;
 
   /**
-   * Tries to join a room using the given parameters.
+   * Tries to join a room using the given parameters. There are 3 separate methods of joining rooms:
+   *   - Anonymous rooms require token!=null, 
+   *   - Named rooms require endpoint!=null,
+   *   - Community rooms require cName!=null and cRoom!=null.
    * 
    * @param joinParams An object that might have the following keys:
-   *   - `id: string`: The id of the room to join. For example, if the room link is `https://moo-hoo.com/mooball/join?c=ZzZzZzZzZzZzZzZzZz`, the id of this room is `ZzZzZzZzZzZzZzZzZz`.
+   *   - `id: string | null`: The id of the room to join. For example, if the room link is `https://moo-hoo.com/mooball/join?c=ZzZzZzZzZzZzZzZzZz`, the id of this room is `ZzZzZzZzZzZzZzZzZz`.
+   *   - `endpoint: string | null`: The endpoint of the room to join. For example, if the room link is `https://moo-hoo.com/mooball/join/ZzZzZ`, the endpoint of this room is `ZzZzZ`.
+   *   - `cName: string | null`: The community name of the room to join. Works with cRoom. For example, if the room link is `https://moo-hoo.com/mooball/join/c/sanguchito/X4`, the cName of this room is `sanguchito`.
+   *   - `cRoom: string | null`: The community room name of the room to join. Works with cName. For example, if the room link is `https://moo-hoo.com/mooball/join/c/sanguchito/X4`, the cRoom of this room is `X4`.
    *   - `password: string | null`: A password value to join the room if the room is password-protected.
    *   - `token: string | null`: If the room is recaptcha-protected, you have to use a client token. Currently there is not any other clean way of generating this token for Mooball's original backend except using the NW.js token generator project, so you might want to look at it.
    *   - `authObj: Auth`: An auth object that has to be initialized by `Utils.generateAuth()` or `Utils.authFromKey()` before being used here.
