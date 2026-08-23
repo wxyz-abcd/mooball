@@ -24,7 +24,8 @@ Language.current = new englishLanguage(API);
       unlimitedPlayerCount: true,
       //fakePassword: false,
       geo: { /*lat: 11, lon: 11, */ flag: "au" },
-      token: process.argv[2] || "thr1.AAAAAGd-YgllhQpiJ7GNNw.ZoUgdxfTMlA", 
+      //token: process.argv[2] || "thr1.AAAAAGd-YgllhQpiJ7GNNw.ZoUgdxfTMlA", 
+      //ctoken: "..."
     }, {
       storage: {
         crappy_router: false,
@@ -37,17 +38,17 @@ Language.current = new englishLanguage(API);
         avatar: "👾"
       }, 
       debugDesync: true,
+      //identityToken: "...",
       config: new defaultConfig(API),
       renderer: null,
       plugins: [new autoPlay(API), new consoleHelper(API)/*, new eventLogger(API)*/],
       onOpen: (room)=>{
-        const minEnergy = 0.5, maxEnergy = 1.0, energyDrainFrames = 60*0.75, fatigueProps = {sprintMin: 0.3, sprintDrain: 0.003, shootDrainCoeff: 0.08, waitGain: 0.0006}, ballZgravity = 0.0001;//0.0005
+        const minEnergy = 0.5, maxEnergy = 1.0, energyDrainFrames = 60*0.75, fatigueProps = {sprintMin: 0.3, sprintDrain: 0.003, shootDrainCoeff: 0.08, waitGain: 0.0006}, ballZgravity = 0.0005;
         var ballZ = {coord: 0, speed: 0}, originalBallProps, ballKickCountInCurrentGameTick;
         interval = setInterval(()=>room.extrapolate(), 1000/60);
         var setBallZProps = (xspeed, yspeed, zCoord, zSpeed)=>{
           Utils.runAfterGameTick(()=>{
-            var mask = (zCoord==0)?0:(CollisionFlags.red|CollisionFlags.blue|CollisionFlags.redKO|CollisionFlags.blueKO);
-            mask=~mask;
+            var mask = ~((zCoord==0)?0:(CollisionFlags.red|CollisionFlags.blue|CollisionFlags.redKO|CollisionFlags.blueKO));
             room.setDiscProperties(0, {xspeed, yspeed, cMask: originalBallProps.cMask&mask, cGroup: originalBallProps.cGroup&mask, radius: originalBallProps.radius*(1+zCoord)});
             ballZ.coord = zCoord;
             ballZ.speed = zSpeed;
@@ -55,33 +56,45 @@ Language.current = new englishLanguage(API);
         };
         var updateBallZ = ()=>{
           Utils.runAfterGameTick(()=>{
-            var c = ballZ.coord+ballZ.speed, s = ballZ.speed-Math.max(ballZgravity, /*Math.abs(ballZ.speed)*0.075*/0);
-            if (c<=0){
+            var b = room.getBall();
+            if (!b)
+              return;
+            var c = ballZ.coord + ballZ.speed;
+            var s = ballZ.speed - Math.max(ballZgravity, Math.abs(ballZ.speed)*0.0750);
+            if (c <= 0){
               c = 0;
               s = 0;
-              room.setDiscProperties(0, {cMask: originalBallProps.cMask, cGroup: originalBallProps.cGroup, radius: originalBallProps.radius});
+              room.setDiscProperties(0, {
+                cMask: originalBallProps.cMask,
+                cGroup: originalBallProps.cGroup,
+                radius: originalBallProps.radius
+              });
             }
-            else{
-              var props = {radius: originalBallProps.radius*(1+1.25*c)}, mask = 0, cm, cg, b = room.getBall();
-              if (c>0.3){
-                mask|=CollisionFlags.kick;
-                if (c>0.5)
-                  mask|=CollisionFlags.score;
-                if (s>0){
-                  mask=~mask;
-                  cm = b.cMask&mask;
-                  cg = b.cGroup&mask;
-                }
-                else{
-                  cm = b.cMask|mask;
-                  cg = b.cGroup|mask;
-                }
+            else {
+              var cMask = b.cMask;
+              var cGroup = b.cGroup;
+              if (c > 0.3){
+                cMask &= ~CollisionFlags.kick;
+                cGroup &= ~CollisionFlags.kick;
               }
-              if (cm!=b.cMask)
-                props.cMask = cm;
-              if (cg!=b.cGroup)
-                props.cGroup = cg;
-              room.setDiscProperties(0, props);
+              else {
+                cMask |= CollisionFlags.kick;
+                cGroup |= CollisionFlags.kick;
+              }
+
+              if (c > 0.5){
+                cMask &= ~CollisionFlags.score;
+                cGroup &= ~CollisionFlags.score;
+              }
+              else {
+                cMask |= CollisionFlags.score;
+                cGroup |= CollisionFlags.score;
+              }
+              room.setDiscProperties(0, {
+                radius: originalBallProps.radius * (1 + 1.25 * c),
+                cMask,
+                cGroup
+              });
             }
             ballZ.coord = c;
             ballZ.speed = s;

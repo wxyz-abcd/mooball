@@ -20,6 +20,8 @@ type IdentityData = null | {
       id: uint32,
       name: string,
       type: int8,
+      tagId: int32,
+      cOwner: boolean,
       owned_apps?: string[], 
       endpoints?: string[], 
       discordInfo?: string
@@ -2031,6 +2033,12 @@ interface StreamWatcherRoom extends SandboxRoomBase {
 interface SandboxRoom extends SandboxRoomBase {
 
   /**
+   * Maximum number of game ticks to save while recording a clip. read-only.
+   * To set a new value, you should use `sandbox.setClipTicks(clipTicks)` instead.
+   */
+  readonly clipTicks: int;
+
+  /**
    * Initializes the sandbox. (Should only be called if `delayedInit` is `true`.)
    * 
    * @returns void.
@@ -2038,23 +2046,30 @@ interface SandboxRoom extends SandboxRoomBase {
   initialize(): void;
 
   /**
-   * Start recording replay. Recording should be stopped before calling this.
+   * Start recording replay. Recording must be passive while calling this.
    * 
    * @returns `true` if succeeded, `false` otherwise.
    */
   startRecording(): boolean;
 
   /**
-   * Save a short clip of the latest moments of the current replay that is being recorded.
+   * Sets the maximum number of game ticks to save while recording a clip.
    * 
-   * @param ticks Number of game ticks to be recorded.
+   * @param ticks Number of game ticks.
+   * 
+   * @returns void.
+   */
+  setClipTicks(ticks): void;
+
+  /**
+   * Save a short clip of the latest moments of the current replay that is being recorded. Recording must be active while calling this.
    * 
    * @returns The recorded replay data if succeeded, `null` otherwise.
    */
-  clipRecording(ticks: uint32): Promise<Uint8Array> | null;
+  clipRecording(): Uint8Array | null;
 
   /**
-   * Stop recording replay. Recording should be started before calling this.
+   * Stop recording replay. Recording must be active while calling this.
    * 
    * @returns The recorded replay data if succeeded, `null` otherwise.
    */
@@ -5586,6 +5601,12 @@ interface RoomBase {
   readonly unlimitedPlayerCount: boolean;
 
   /**
+   * Maximum number of game ticks to save while recording a clip. read-only.
+   * To set a new value, you should use `room.setClipTicks(clipTicks)` instead.
+   */
+  readonly clipTicks: int;
+
+  /**
    * The current recaptcha token of the room. If changed, it will also refresh the room link. host-only.
    */
   token: string;
@@ -6163,30 +6184,37 @@ interface RoomBase {
   setPluginActive(name: string, active: boolean): void;
 
   /**
-   * Start recording replay. Recording should be stopped before calling this.
+   * Start recording replay. Recording must be passive while calling this.
    * 
    * @returns `true` if succeeded, `false` otherwise.
    */
   startRecording(): boolean;
 
   /**
-   * Save a short clip of the latest moments of the current replay that is being recorded.
+   * Sets the maximum number of game ticks to save while recording a clip.
    * 
-   * @param ticks Number of game ticks to be recorded.
+   * @param ticks Number of game ticks.
+   * 
+   * @returns void.
+   */
+  setClipTicks(ticks): void;
+
+  /**
+   * Save a short clip of the latest moments of the current replay that is being recorded. Recording must be active while calling this.
    * 
    * @returns The recorded replay data if succeeded, `null` otherwise.
    */
-  clipRecording(ticks: uint32): Promise<Uint8Array> | null;
+  clipRecording(): Uint8Array | null;
 
   /**
-   * Stop recording replay. Recording should be started before calling this.
+   * Stop recording replay. Recording must be active while calling this.
    * 
    * @returns The recorded replay data if succeeded, `null` otherwise.
    */
   stopRecording(): Uint8Array | null;
 
   /**
-   * Start streaming the game. Streaming and recording should be stopped before calling this. (Currently, recording and streaming cannot be run simultaneously)
+   * Start streaming the game. Streaming and recording should be stopped while calling this. (Currently, recording and streaming cannot be run simultaneously)
    * 
    * @param params The parameters required for the streaming to work.
    * 
@@ -6195,7 +6223,7 @@ interface RoomBase {
   startStreaming(params?: StartStreamingParams): StartStreamingReturnValue | null;
 
   /**
-   * Stop streaming the game. Streaming should be started before calling this.
+   * Stop streaming the game. Streaming should be started while calling this.
    * 
    * @returns void.
    */
@@ -12302,7 +12330,7 @@ type Room = {
    *   - `libraries`: An array of `Library`s to activate. (default value is `[]`)
    *   - `version`: The version of this room. (default value is `9`)
    *   - `proxyAgent`:  A custom proxy agent to use for the room's connection. (default value is `null`)
-   *   - `identityToken`: A token that represents a user data in a database of a custom proxy/backend server. (default value is `null`)
+   *   - `identityToken`: A token that represents a user data in moo-hoo.com's database. (default value is `null`)
    *   - `debugDesync`: A callback in client rooms that will be called whenever a desync occurs if the host room also has a `true` value for this key. Look at https://github.com/wxyz-abcd/mooball/tree/main/examples/other/compareStates.js for the default implementation of desync checking. (default value is `null`)
    *   - `preInit(room: Room)=>void`: A callback that is called just after the room is created, and before the initialization of the addons.. (default value is `null`)
    *   - `onOpen(room: Room)=>void`: A callback that is called when joining or creating a room was successful. (default value is `null`)
@@ -12345,7 +12373,7 @@ type Room = {
    *   - `libraries`: An array of `Library`s to activate. (default value is `[]`)
    *   - `version`: The version of this room. (default value is `9`)
    *   - `proxyAgent`:  A custom proxy agent to use for the room's connection. (default value is `null`)
-   *   - `identityToken`: A token that represents a user data in a database of a custom proxy/backend server. (default value is `null`)
+   *   - `identityToken`: A token that represents a user data in moo-hoo.com's database. (default value is `null`)
    *   - `debugDesync`: A callback in client rooms that will be called whenever a desync occurs if the host room also has a `true` value for this key. Look at https://github.com/wxyz-abcd/mooball/tree/main/examples/other/compareStates.js for the default implementation of desync checking. (default value is `null`)
    *   - `preInit(room: Room)=>void`: A callback that is called just after the room is created, and before the initialization of the addons.. (default value is `null`)
    *   - `onOpen(room: Room)=>void`: A callback that is called when joining or creating a room was successful. (default value is `null`)
@@ -13714,7 +13742,7 @@ declare class LibConfig {
   stunServer?: string;
 
   /**
-   * A token that represents a user data in a database of a custom proxy/backend server.
+   * A token that represents a user data in moo-hoo.com's database.
    */
   identityToken?: string;
 }
