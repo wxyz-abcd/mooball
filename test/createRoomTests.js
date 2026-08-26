@@ -48,7 +48,7 @@ Language.current = new englishLanguage(API);
         interval = setInterval(()=>room.extrapolate(), 1000/60);
         var setBallZProps = (xspeed, yspeed, zCoord, zSpeed)=>{
           Utils.runAfterGameTick(()=>{
-            var mask = ~((zCoord==0)?0:(CollisionFlags.red|CollisionFlags.blue|CollisionFlags.redKO|CollisionFlags.blueKO));
+            var mask = ~((zCoord==0)?0:(CollisionFlags.red|CollisionFlags.blue|CollisionFlags.green|CollisionFlags.purple|CollisionFlags.yellow|CollisionFlags.redKO|CollisionFlags.blueKO|CollisionFlags.greenKO|CollisionFlags.purpleKO|CollisionFlags.yellowKO));
             room.setDiscProperties(0, {xspeed, yspeed, cMask: originalBallProps.cMask&mask, cGroup: originalBallProps.cGroup&mask, radius: originalBallProps.radius*(1+zCoord)});
             ballZ.coord = zCoord;
             ballZ.speed = zSpeed;

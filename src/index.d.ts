@@ -160,104 +160,104 @@ declare enum CollisionFlags {
   score = 128,
 
   /**
-   * Free
+   * If defined, the object will accept collisions with other "green"s.
    */
-  free1 = 256,
+  green = 256,
+
+  /**
+   * If defined, the object will accept collisions with other "purple"s.
+   */
+  purple = 512,
+
+  /**
+   * If defined, the object will accept collisions with other "yellow"s.
+   */
+  yellow = 1024,
+
+  /**
+   * If defined, the object will accept collisions with other "green"s only until the kick-off event happens. 
+   */
+  greenKO = 2048,
+
+  /**
+   * If defined, the object will accept collisions with other "purple"s only until the kick-off event happens. 
+   */
+  purpleKO = 4096,
+
+  /**
+   * If defined, the object will accept collisions with other "yellow"s only until the kick-off event happens. 
+   */
+  yellowKO = 8192,
 
   /**
    * Free
    */
-  free2 = 512,
+  free1 = 16384,
 
   /**
    * Free
    */
-  free3 = 1024,
+  free2 = 32768,
 
   /**
    * Free
    */
-  free4 = 2048,
+  free3 = 65536,
 
   /**
    * Free
    */
-  free5 = 4096,
+  free4 = 131072,
 
   /**
    * Free
    */
-  free6 = 8192,
+  free5 = 262144,
 
   /**
    * Free
    */
-  free7 = 16384,
+  free6 = 524288,
 
   /**
    * Free
    */
-  free8 = 32768,
+  free7 = 1048576,
 
   /**
    * Free
    */
-  free9 = 65536,
+  free8 = 2097152,
 
   /**
    * Free
    */
-  free10 = 131072,
+  free9 = 4194304,
 
   /**
    * Free
    */
-  free11 = 262144,
+  free10 = 8388608,
 
   /**
    * Free
    */
-  free12 = 524288,
+  free11 = 16777216,
 
   /**
    * Free
    */
-  free13 = 1048576,
+  free12 = 33554432,
 
   /**
    * Free
    */
-  free14 = 2097152,
+  free13 = 67108864,
 
   /**
    * Free
    */
-  free15 = 4194304,
-
-  /**
-   * Free
-   */
-  free16 = 8388608,
-
-  /**
-   * Free
-   */
-  free17 = 16777216,
-
-  /**
-   * Free
-   */
-  free18 = 33554432,
-
-  /**
-   * Free
-   */
-  free19 = 67108864,
-
-  /**
-   * Free
-   */
-  free20 = 134217728,
+  free14 = 134217728,
 
   /**
    * Free
@@ -759,7 +759,12 @@ declare enum OperationType {
   /**
    * The operation to send emote.
    */
-  SendEmote = 43
+  SendEmote = 43,
+  
+  /**
+   * The operation to set team count.
+   */
+  SetTeamCount = 44
 }
 
 
@@ -1565,6 +1570,17 @@ declare class SetPlayerBarLevelsEvent extends MooballEvent {
 }
 
 /**
+ * The event message structure that is created by the host to manually set the team count of a room. 
+ */
+declare class SetTeamCountEvent extends MooballEvent {
+
+  /**
+   * The desired nuber of teams.
+   */
+  public teamCount: uint8;
+}
+
+/**
  * The event message structure that is created by the host to play a custom sound.
  */
 declare class PlayCustomSoundEvent extends MooballEvent {
@@ -2184,6 +2200,15 @@ interface SandboxRoom extends SandboxRoomBase {
    * @returns void.
    */
   setCurrentStadium(value: IStadium, byId: uint16): void;
+
+  /**
+   * Sets the team count of the current room using a fake identity.
+   * 
+   * @param teamCount The desired number of teams of the room. `3` <= `teamCount` <= `6`.
+   * 
+   * @returns void.
+   */
+  setTeamCount(teamCount: int, byId: uint16): void;
 
   /**
    * Sends an announcement message to a player.
@@ -5044,22 +5069,53 @@ interface createPopupParams {
 interface Gui {
 
   /**
-   * All input controls.
+   * All input controls. Here is the default configuration:
+   * 
+   * name:"Up", inputs: [38, 87]
+   * name:"Down", inputs: [40, 83]
+   * name:"Left", inputs: [37, 65]
+   * name:"Right", inputs: [39, 68]
+   * name:"Kick", inputs: [88, 32, 17, 16, 96]
    */
   controls: GuiControl[];
 
   /**
-   * All sounds.
+   * All sounds. Here is the default configuration:
+   * 
+   * name:"chat", value:"./sounds/chat.ogg"
+   * name:"crowd", value:"./sounds/crowd.ogg"
+   * name:"goal", value:"./sounds/goal.ogg"
+   * name:"highlight", value:"./sounds/highlight.ogg"
+   * name:"join", value:"./sounds/join.ogg"
+   * name:"kick", value:"./sounds/kick.ogg"
+   * name:"leave", value:"./sounds/leave.ogg"
    */
   sounds:  {[name: string]: {url: string}};
 
   /**
-   * All css variables.
+   * All css variables. Here is the default configuration:
+   * 
+   * name:"tn0", value:"Spectators", 
+   * name:"tc0", value:"#ffffff", 
+   * name:"tn1", value:"Red", 
+   * name:"tc1", value:"#f5431d", 
+   * name:"tn2", value:"Blue", 
+   * name:"tc2", value:"#2060d6", 
+   * name:"tn3", value:"Green", 
+   * name:"tc3", value:"#20b85a", 
+   * name:"tn4", value:"Purple", 
+   * name:"tc4", value:"#8b3fd1", 
+   * name:"tn5", value:"Yellow",
+   * name:"tc5", value:"#e8b52a", 
    */
   cssVars: {[name: string]: {value: string}};
 
   /**
-   * All css styles.
+   * All css styles. Here is the default configuration:
+   * 
+   * (for: popup main)   id:0, value:"width:100%;height:100%;border:2px solid black;border-radius:10px;padding:0px;background-color:rgba(220,220,0,0.7)"
+   * (for: title bar)    id:1, value:"width:100%;background-color:rgba(0,128,170,0.7);display:flex;flex-direction:row;justify-content:space-between;align-items:center;border-bottom:2px solid black;font-size:1.2em;padding:3px;box-sizing:border-box"
+   * (for: close button) id:2, value:"cursor:pointer;color:#ff0000;width:20px;border:none;background-color:transparent;font-weight:900"
    */
   styles: {[id: int]: {css: string}};
 
@@ -5505,6 +5561,36 @@ interface RoomBase {
   readonly librariesMap: object;
 
   /**
+   * Number of active teams. 3<=teamCount<=6.
+   */
+  readonly teamCount: int;
+
+  /**
+   * If `room.teamCount` is 3, returns the current score of red team. Otherwise returns the negative of current number of goals conceded by red team.
+   */
+  readonly redScore: int;
+
+  /**
+   * If `room.teamCount` is 3, returns the current score of blue team. Otherwise returns the negative of current number of goals conceded by blue team.
+   */
+  readonly blueScore: int;
+
+  /**
+   * Returns the negative of current number of goals conceded by green team.
+   */
+  readonly greenScore: int;
+
+  /**
+   * Returns the negative of current number of goals conceded by purple team.
+   */
+  readonly purpleScore: int;
+
+  /**
+   * Returns the negative of current number of goals conceded by yellow team.
+   */
+  readonly yellowScore: int;
+
+  /**
    * The name of the room. read-only.
    */
   readonly name: string;
@@ -5558,6 +5644,31 @@ interface RoomBase {
    * The current frame number of the room. read-only.
    */
   readonly currentFrameNo: int;
+
+  /**
+   * Whether the clock is paused or not.
+   */
+  readonly clockPaused: boolean;
+
+  /**
+   * Number of ticks the physics engine waits after each goal before restarting the game.
+   */
+  readonly goalTicksMax: int;
+
+  /**
+   * Number of ticks the physics engine waits after each pause before resuming the game.
+   */
+  readonly pauseTicksMax: int;
+
+  /**
+   * Number of ticks the physics engine waits after deciding that the game is over before ending the game.
+   */
+  readonly endTicksMax: int;
+
+  /**
+   * Whether player directions are active or not.
+   */
+  readonly directionActive: boolean;
 
   /**
    * The current list of banned players. read-only. host-only.
@@ -5656,6 +5767,15 @@ interface RoomBase {
    * @returns void.
    */
   setProperties(properties: SetRoomPropertiesParams): void;
+
+  /**
+   * Sets the team count of the current room. host-only.
+   * 
+   * @param teamCount The desired number of teams of the room. `3` <= `teamCount` <= `6`.
+   * 
+   * @returns void.
+   */
+  setTeamCount(teamCount: int): void;
 
   /**
    * Sets the kick rate limit of the current room. admins-only.
@@ -6018,7 +6138,7 @@ interface RoomBase {
   resetTeams(): void;
 
   /**
-   * Removes the last two players from the spectators team and adds them to consecutive teams. The first is added to a random team, the second is added to the rival of the first team, etc. If there is only one player, it is added to a random team. admin-only.
+   * Removes the last `room.teamCount-1` players from the spectators team and adds them to each team. If there is less than `room.teamCount-1` players, they are added to random teams. admin-only.
    * 
    * @returns void.
    */
@@ -6783,16 +6903,6 @@ declare class GameState {
   timeElapsed: number;
 
   /**
-   * The current score of blue team.
-   */
-  blueScore: int;
-
-  /**
-   * The current score of red team.
-   */
-  redScore: int;
-
-  /**
    * The current state of the actual gameplay.
    */
   state: GamePlayState;
@@ -6849,6 +6959,11 @@ declare class GameState {
   stadium: IStadium;
 
   /**
+   * Internal array that contains the negative of how many goals each team has conceded.
+   */
+  scores: int[];
+
+  /**
    * The team that conceded the last goal.
    */
   goalConcedingTeam: Team;
@@ -6857,6 +6972,31 @@ declare class GameState {
    * Whether the game is currently paused or not.
    */
   readonly paused: boolean;
+
+  /**
+   * If `room.teamCount` is 3, returns the current score of red team. Otherwise returns the negative of current number of goals conceded by red team.
+   */
+  readonly redScore: int;
+
+  /**
+   * If `room.teamCount` is 3, returns the current score of blue team. Otherwise returns the negative of current number of goals conceded by blue team.
+   */
+  readonly blueScore: int;
+
+  /**
+   * Returns the negative of current number of goals conceded by green team.
+   */
+  readonly greenScore: int;
+
+  /**
+   * Returns the negative of current number of goals conceded by purple team.
+   */
+  readonly purpleScore: int;
+
+  /**
+   * Returns the negative of current number of goals conceded by yellow team.
+   */
+  readonly yellowScore: int;
 
   /**
    * The extrapolated version of this GameState, or `null` if the data is not available.
@@ -6963,6 +7103,11 @@ interface RoomStateBase {
    * All players that are currently in this room.
    */
   players: Player[];
+
+  /**
+   * Number of active teams. 3<=teamCount<=6.
+   */
+  teamCount: int;
 
   /**
    * Name of this room.
@@ -7531,6 +7676,16 @@ interface HostTriggeredCallbacks {
    * @returns void or a custom data to pass to the next callback.
    */
   onPlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): any,
+  
+  /**
+   * Called just after the team count of the current room has been set.
+   * 
+   * @param teamCount The new number of teams of the room. `3` <= `teamCount` <= `6`.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onTeamCountChange?(teamCount: uint8, customData?: any): any,
 }
 
 /**
@@ -7568,7 +7723,7 @@ interface GameCallbacks {
   /**
    * Called just after a goal has been scored.
    * 
-   * @param teamId Id of the team that scored the goal.
+   * @param teamId Id of the team that scored the goal if `teamCount=3`, id of the team that conceded the goal otherwise.
    * @param goalId Id of the goal object that the ball went in.
    * @param goal The goal object that the ball went in.
    * @param ballDiscId Id of the ball disc that caused the goal.
@@ -7846,18 +8001,24 @@ interface CommonCallbacks {
   onPlayerSyncChange?(playerId: uint16, value: boolean, customData?: any): any,
 
   /**
-   * Called just after an "auto" event has been triggered to automatically move at least one, at most two players from spectators to teams.
+   * Called just after an "auto" event has been triggered to automatically move at least one, at most `room.state.teamCount` players from spectators to teams.
    * 
    * @param playerId1 Id of the first player affected by this event.
    * @param teamId1 Id of the team which the first player was moved into.
-   * @param playerId2 Id of the second player affected by this event, or `null` if there was only one spectator when this event was triggered.
-   * @param teamId2 Id of the team which the second player was moved into, or `null` if there was only one spectator when this event was triggered.
+   * @param playerId2 Id of the second player affected by this event, or `null` if there was less than two spectator when this event was triggered.
+   * @param teamId2 Id of the team which the second player was moved into, or `null` if there was less than two spectator when this event was triggered.
+   * @param playerId3 Id of the third player affected by this event, or `null` if there was less than three spectator when this event was triggered.
+   * @param teamId3 Id of the team which the third player was moved into, or `null` if there was less than three spectator when this event was triggered.
+   * @param playerId4 Id of the fourth player affected by this event, or `null` if there was less than four spectator when this event was triggered.
+   * @param teamId4 Id of the team which the fourth player was moved into, or `null` if there was less than four spectator when this event was triggered.
+   * @param playerId5 Id of the fifth player affected by this event, or `null` if there was less than five spectator when this event was triggered.
+   * @param teamId5 Id of the team which the fifth player was moved into, or `null` if there was less than five spectator when this event was triggered.
    * @param byId Id of the player who has triggered the event.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onAutoTeams?(playerId1: uint16, teamId1: int, playerId2: uint16 | null, teamId2: int | null, byId: uint16, customData?: any): any,
+  onAutoTeams?(playerId1: uint16, teamId1: int, playerId2: uint16 | null, teamId2: int | null, playerId3: uint16 | null, teamId3: int | null, playerId4: uint16 | null, teamId4: int | null, playerId5: uint16 | null, teamId5: int | null, byId: uint16, customData?: any): any,
 
   /**
    * Called just after the score limit has been changed.
@@ -8957,7 +9118,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onBeforeTeamScoreChange?(teamId: uint8, value: number): any
+  onBeforeTeamScoreChange?(teamId: uint8, value: number): any,
   
   /**
    * Called just after the current team scores has been changed.
@@ -8968,7 +9129,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * 
    * @returns void.
    */
-  onAfterTeamScoreChange?(teamId: uint8, value: number, customData?: any): void
+  onAfterTeamScoreChange?(teamId: uint8, value: number, customData?: any): void,
   
   /**
    * Called just after the bar levels of an individual player has been altered manually.
@@ -8993,7 +9154,26 @@ interface HostTriggeredRoomConfigCallbacks {
    * 
    * @returns void.
    */
-  onAfterPlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): any,
+  onAfterPlayerBarLevelsChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): void,
+  
+  /**
+   * Called just after the team count of the current room has been set.
+   * 
+   * @param teamCount The new number of teams of the room. `3` <= `teamCount` <= `6`.
+   * 
+   * @returns void or a custom data to pass to the next callback.
+   */
+  onBeforeTeamCountChange?(id: uint32, bar1: number, bar2: number, bar3: number): any,
+  
+  /**
+   * Called just after the team count of the current room has been set.
+   * 
+   * @param teamCount The new number of teams of the room. `3` <= `teamCount` <= `6`.
+   * @param customData the custom data that was returned from the previous callback.
+   * 
+   * @returns void.
+   */
+  onAfterTeamCountChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): void,
 }
 
 
@@ -9548,31 +9728,43 @@ interface CommonRoomConfigCallbacks {
   onAfterPlayerSyncChange?(playerId: uint16, value: boolean, customData?: any): void,
 
   /**
-   * Called just after an "auto" event has been triggered to automatically move at least one, at most two players from spectators to teams.
+   * Called just after an "auto" event has been triggered to automatically move at least one, at most `room.state.teamCount` players from spectators to teams.
    * 
    * @param playerId1 Id of the first player affected by this event.
    * @param teamId1 Id of the team which the first player was moved into.
-   * @param playerId2 Id of the second player affected by this event, or `null` if there was only one spectator when this event was triggered.
-   * @param teamId2 Id of the team which the second player was moved into, or `null` if there was only one spectator when this event was triggered.
+   * @param playerId2 Id of the second player affected by this event, or `null` if there was less than two spectator when this event was triggered.
+   * @param teamId2 Id of the team which the second player was moved into, or `null` if there was less than two spectator when this event was triggered.
+   * @param playerId3 Id of the third player affected by this event, or `null` if there was less than three spectator when this event was triggered.
+   * @param teamId3 Id of the team which the third player was moved into, or `null` if there was less than three spectator when this event was triggered.
+   * @param playerId4 Id of the fourth player affected by this event, or `null` if there was less than four spectator when this event was triggered.
+   * @param teamId4 Id of the team which the fourth player was moved into, or `null` if there was less than four spectator when this event was triggered.
+   * @param playerId5 Id of the fifth player affected by this event, or `null` if there was less than five spectator when this event was triggered.
+   * @param teamId5 Id of the team which the fifth player was moved into, or `null` if there was less than five spectator when this event was triggered.
    * @param byId Id of the player who has triggered the event.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onBeforeAutoTeams?(playerId1: uint16, teamId1: int, playerId2: uint16 | null, teamId2: int | null, byId: uint16): any,
+  onBeforeAutoTeams?(playerId1: uint16, teamId1: int, playerId2: uint16 | null, teamId2: int | null, playerId3: uint16 | null, teamId3: int | null, playerId4: uint16 | null, teamId4: int | null, playerId5: uint16 | null, teamId5: int | null, byId: uint16): any,
 
   /**
-   * Called just after an "auto" event has been triggered to automatically move at least one, at most two players from spectators to teams.
+   * Called just after an "auto" event has been triggered to automatically move at least one, at most `room.state.teamCount` players from spectators to teams.
    * 
    * @param playerId1 Id of the first player affected by this event.
    * @param teamId1 Id of the team which the first player was moved into.
-   * @param playerId2 Id of the second player affected by this event, or `null` if there was only one spectator when this event was triggered.
-   * @param teamId2 Id of the team which the second player was moved into, or `null` if there was only one spectator when this event was triggered.
+   * @param playerId2 Id of the second player affected by this event, or `null` if there was less than two spectator when this event was triggered.
+   * @param teamId2 Id of the team which the second player was moved into, or `null` if there was less than two spectator when this event was triggered.
+   * @param playerId3 Id of the third player affected by this event, or `null` if there was less than three spectator when this event was triggered.
+   * @param teamId3 Id of the team which the third player was moved into, or `null` if there was less than three spectator when this event was triggered.
+   * @param playerId4 Id of the fourth player affected by this event, or `null` if there was less than four spectator when this event was triggered.
+   * @param teamId4 Id of the team which the fourth player was moved into, or `null` if there was less than four spectator when this event was triggered.
+   * @param playerId5 Id of the fifth player affected by this event, or `null` if there was less than five spectator when this event was triggered.
+   * @param teamId5 Id of the team which the fifth player was moved into, or `null` if there was less than five spectator when this event was triggered.
    * @param byId Id of the player who has triggered the event.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void.
    */
-  onAfterAutoTeams?(playerId1: uint16, teamId1: int, playerId2: uint16 | null, teamId2: int | null, byId: uint16, customData?: any): void,
+  onAfterAutoTeams?(playerId1: uint16, teamId1: int, playerId2: uint16 | null, teamId2: int | null, playerId3: uint16 | null, teamId3: int | null, playerId4: uint16 | null, teamId4: int | null, playerId5: uint16 | null, teamId5: int | null, byId: uint16, customData?: any): void,
 
   /**
    * Called just after the score limit has been changed.
@@ -11033,7 +11225,22 @@ declare class Team {
   static blue: Team;
 
   /**
-   * A static array to get all teams using their ids. Its definition is `Team.byId = [Team.spec, Team.red, Team.blue]`.
+   * The static green team.
+   */
+  static green: Team;
+
+  /**
+   * The static purple team.
+   */
+  static purple: Team;
+
+  /**
+   * The static yellow team.
+   */
+  static yellow: Team;
+
+  /**
+   * A static array to get all teams using their ids. Its definition is `Team.byId = [Team.spec, Team.red, Team.blue, Team.green, Team.purple, Team.yellow]`.
    */
   static byId: Team[];
 
@@ -11505,6 +11712,21 @@ declare class IStadium {
    * All spawn points of this Stadium for the blue team.
    */
   public blueSpawnPoints: Point[];
+
+  /**
+   * All spawn points of this Stadium for the green team.
+   */
+  public greenSpawnPoints: Point[];
+
+  /**
+   * All spawn points of this Stadium for the purple team.
+   */
+  public purpleSpawnPoints: Point[];
+
+  /**
+   * All spawn points of this Stadium for the yellow team.
+   */
+  public yellowSpawnPoints: Point[];
 
   /**
    * The physics properties of all players for this Stadium.
@@ -11980,11 +12202,12 @@ interface Utils {
   calculateAllRoomDistances(geo: GeoLocation, list: RoomData[]): void;
 
   /**
-   * Returns the html color string (rgba representation) of the given `number`. This function is mostly intended to be used in renderers and map editors. Bad inputs will return a bad string output.
+   * Returns the html color string (rgba or hex representation) of the given `number`. This function is mostly intended to be used in renderers and map editors. Bad inputs will return a bad string output.
    * 
    * @param number A number in the range [0, 16777215].
+   * @param hex Whether to convert to hex format or not.
    * 
-   * @returns The rgba representation of the color that was generated from the given `number`.
+   * @returns The rgba or hex representation of the color that was generated from the given `number`.
    * 
    * @example
    * function drawTextWithColor(canvas, x, y, text, color){
@@ -11994,7 +12217,7 @@ interface Utils {
    *   return canvas;
    * }
    */
-  numberToColor(number: int): string;
+  numberToColor(number: int, hex?: boolean): string;
 
   /**
    * Returns the number representation of the given html color string. (rgba representation) This function is mostly intended to be used in renderers and map editors.
@@ -13017,6 +13240,15 @@ interface EventFactory {
    * @returns An instance of SetPlayerBarLevelsEvent.
    */
   setPlayerBarLevels(id: uint32, bar1: number, bar2: number, bar3: number): SetPlayerBarLevelsEvent;
+
+  /**
+   * Creates a SetTeamCountEvent object that can be used to manually set the team count of the current room.
+   * 
+   * @param teamCount The desired number of teams of the room. `3` <= `teamCount` <= `6`.
+   * 
+   * @returns An instance of SetTeamCountEvent.
+   */
+  setTeamCount(teamCount: int): SetTeamCountEvent;
 }
 
 

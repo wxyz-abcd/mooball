@@ -26,7 +26,13 @@ Used in physics engine for `collisionMask` and `collisionGroup` bitwise operatio
 | 32 | `wall` | Acts as a wall |
 | 64 | `kick` | Becomes kickable |
 | 128 | `score` | Scores a goal if passes goal line |
-| 256+ | `free1`-`free20` | Free for custom use |
+| 256 | `green` | Accept collisions with green team |
+| 512 | `purple` | Accept collisions with purple team |
+| 1024 | `yellow` | Accept collisions with yellow team |
+| 2048 | `greenKO` | Green kickoff barrier |
+| 4096 | `purpleKO` | Purple kickoff barrier |
+| 8192 | `yellowKO` | Yellow kickoff barrier |
+| 16384+ | `free1`-`free14` | Free for custom use |
 | 268435456+ | `c0`-`c3` | Free for custom use |
 
 Collision logic: `(discA.cMask & discB.cGroup) > 0 && (discB.cMask & discA.cGroup) > 0`
@@ -132,6 +138,9 @@ The `Stadium` class contains all information about the stadium and some helpful 
 | `joints` | `Joint[]` | All joints of this Stadium. |
 | `redSpawnPoints` | `Point[]` | All spawn points of this Stadium for the red team. |
 | `blueSpawnPoints` | `Point[]` | All spawn points of this Stadium for the blue team. |
+| `greenSpawnPoints` | `Point[]` | All spawn points of this Stadium for the green team. |
+| `purpleSpawnPoints` | `Point[]` | All spawn points of this Stadium for the purple team. |
+| `yellowSpawnPoints` | `Point[]` | All spawn points of this Stadium for the yellow team. |
 | `fonts` | `string[]` | All fonts of this Stadium. |
 | `images` | `StadiumImage[]` | All images of this Stadium. |
 | `texts` | `StadiumText[]` | All texts of this Stadium. |
@@ -186,12 +195,16 @@ The `room` object is available as soon as `onOpen(room)` callback is called.
 | `room.name` | `string` | Room name |
 | `room.gui` | `Gui` | GUI data |
 | `room.link` | `string` | Room link |
+| `room.teamCount` | `int` | Team count |
 | `room.timeLimit` | `int` | Time limit |
 | `room.scoreLimit` | `int` | Score limit |
 | `room.stadium` | `Stadium` | Current stadium |
 | `room.players` | `Player[]` | Player list |
 | `room.redScore` | `int \| null` | Red score |
 | `room.blueScore` | `int \| null` | Blue score |
+| `room.greenScore` | `int \| null` | Green score |
+| `room.purpleScore` | `int \| null` | Purple score |
+| `room.yellowScore` | `int \| null` | Yellow score |
 | `room.timeElapsed` | `int \| null` | Elapsed time |
 | `room.currentFrameNo` | `int` | Current frame number |
 | `room.banList` | `BanEntry[]` | Banned players (host) |
@@ -210,6 +223,7 @@ The `room` object is available as soon as `onOpen(room)` callback is called.
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `room.state.teamCount` | `int` | Team count |
 | `room.state.stadium` | `Stadium` | Current stadium |
 | `room.state.kickRate_min` | `int` | Kick rate min |
 | `room.state.kickRate_rate` | `int` | Kick rate rate |
@@ -236,8 +250,12 @@ The `room` object is available as soon as `onOpen(room)` callback is called.
 |----------|------|-------------|
 | `room.gameState.pauseGameTickCounter` | `int` | Ticks left to resume |
 | `room.gameState.timeElapsed` | `number` | Elapsed time in ms |
-| `room.gameState.blueScore` | `int` | Blue score |
+| `room.gameState.scores` | `int[]` | All team scores |
 | `room.gameState.redScore` | `int` | Red score |
+| `room.gameState.blueScore` | `int` | Blue score |
+| `room.gameState.greenScore` | `int` | Green score |
+| `room.gameState.purpleScore` | `int` | Purple score |
+| `room.gameState.yellowScore` | `int` | Yellow score |
 | `room.gameState.state` | `GamePlayState` | Gameplay state |
 | `room.gameState.goalTickCounter` | `int` | Ticks left to reset (150 after goal) |
 | `room.gameState.physicsState` | `World` | Physical state |
@@ -314,6 +332,9 @@ Sets score limit (0-99, 0 = unlimited). Game must be stopped.
 
 ### `room.setTimeLimit(value): void`
 Sets time limit (0-99, 0 = unlimited). Game must be stopped.
+
+### `room.setTeamCount(value): void`
+Sets team count (3-6). Game must be stopped.
 
 ### `room.addVertex(data): void`
 Creates a vertex object and adds it to the current stadium.
@@ -936,6 +957,9 @@ Called after the kick rate limit has changed.
 Called after an individual player's direction has changed. `room.state.directionActive` must be true.
 
 **Host:**
+
+### `room.onTeamCountChange = function(value) { }`
+Called just after the number of teams has changed.
 
 ### `room.onRoomLink = function(link) { }`
 Called when the room link is received from the backend. Also called when the connection is re-established.
