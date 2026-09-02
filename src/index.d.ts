@@ -764,7 +764,12 @@ declare enum OperationType {
   /**
    * The operation to set team count.
    */
-  SetTeamCount = 44
+  SetTeamCount = 44,
+  
+  /**
+   * The operation to get/set stats.
+   */
+  Stats = 45
 }
 
 
@@ -1653,6 +1658,28 @@ declare class SetPlayerCssVarEvent extends MooballEvent {
    * New cssVar value of the player.
    */
   public cssVar: string|null;
+}
+
+/**
+ * The event message structure that is used to send/request stats.
+ */
+declare class StatsEvent extends MooballEvent {
+
+  /**
+   * Id of the player whose stats are requested.
+   */
+  public playerId: int32;
+
+  /**
+   * The requested stats data. Should be empty while requesting.
+   */
+  public stats: number[];
+
+  /**
+   * Id of the player who will receive the chat. 
+   * If `null`, everyone receives it. Can not be modified.
+   */
+  public readonly targetId: uint16 | null;
 }
 
 /**
@@ -4533,6 +4560,15 @@ interface SandboxModeFunctions {
    * @returns void
    */
   sendDirection(value: number): void;
+
+  /**
+   * Requests/Receives player stats.
+   * 
+   * @param playerId Id of the player whose stats are requested.
+   * @param stats The requested stats data. Should be empty while requesting.
+   * @param byId Id of the player that requested the stats.
+   */
+  receiveStats(playerId: int, stats: number[], byId: int): void;
 }
 
 /**
@@ -5078,6 +5114,11 @@ interface Gui {
    * name:"Kick", inputs: [88, 32, 17, 16, 96]
    */
   controls: GuiControl[];
+
+  /**
+   * All stat names. Default value is an empty array.
+   */
+  stats: string[];
 
   /**
    * All sounds. Here is the default configuration:
@@ -6488,6 +6529,15 @@ interface RoomBase {
    * @returns The snapshot copy of the current room's state.
    */
   sendCustomConnectionError(playerId: uint32, errorString: string): void;
+
+  /**
+   * Sends/Requests player stats.
+   * 
+   * @param playerId Id of the player whose stats are requested.
+   * @param stats The requested stats data. Should be empty while requesting. host-only.
+   * @param targetId Id of the player that requested the stats. host-only.
+   */
+  sendStats(playerId: int, stats: number[], targetId: int): void;
 }
 
 type NumericIPv4 = uint32;
@@ -9163,7 +9213,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onBeforeTeamCountChange?(id: uint32, bar1: number, bar2: number, bar3: number): any,
+  onBeforeTeamCountChange?(teamCount: uint8): any,
   
   /**
    * Called just after the team count of the current room has been set.
@@ -9173,7 +9223,7 @@ interface HostTriggeredRoomConfigCallbacks {
    * 
    * @returns void.
    */
-  onAfterTeamCountChange?(id: uint32, bar1: number, bar2: number, bar3: number, customData?: any): void,
+  onAfterTeamCountChange?(teamCount: uint8, customData?: any): void,
 }
 
 
@@ -13249,6 +13299,14 @@ interface EventFactory {
    * @returns An instance of SetTeamCountEvent.
    */
   setTeamCount(teamCount: int): SetTeamCountEvent;
+
+  /**
+   * Sends/Requests player stats.
+   * 
+   * @param playerId Id of the player whose stats are requested.
+   * @param stats The requested stats data. Should be empty while requesting. host-only.
+   */
+  sendStats(playerId: int, stats: number[]): void;
 }
 
 

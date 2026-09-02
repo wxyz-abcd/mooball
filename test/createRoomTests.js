@@ -24,7 +24,9 @@ Language.current = new englishLanguage(API);
       unlimitedPlayerCount: true,
       //fakePassword: false,
       geo: { /*lat: 11, lon: 11, */ flag: "au" },
-      //token: process.argv[2] || "thr1.AAAAAGd-YgllhQpiJ7GNNw.ZoUgdxfTMlA", 
+      // only one of token, endpoint or ctoken must be given.
+      token: process.argv[2] || "thr1.AAAAAGd-YgllhQpiJ7GNNw.ZoUgdxfTMlA", 
+      //endpoint: "...",
       //ctoken: "..."
     }, {
       storage: {
@@ -38,11 +40,14 @@ Language.current = new englishLanguage(API);
         avatar: "👾"
       }, 
       debugDesync: true,
-      //identityToken: "...",
+      //identityToken: "...", // specifying endpoint and ctoken require an authenticated identityToken. you can copy here the access token from the website's local storage.
       config: new defaultConfig(API),
       renderer: null,
       plugins: [new autoPlay(API), new consoleHelper(API)/*, new eventLogger(API)*/],
       onOpen: (room)=>{
+        room.gui.stats = ["passes", "goals", "assists"];
+        const playerStats = {};
+        playerStats[0] = [Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100)];
         const minEnergy = 0.5, maxEnergy = 1.0, energyDrainFrames = 60*0.75, fatigueProps = {sprintMin: 0.3, sprintDrain: 0.003, shootDrainCoeff: 0.08, waitGain: 0.0006}, ballZgravity = 0.0005;
         var ballZ = {coord: 0, speed: 0}, originalBallProps, ballKickCountInCurrentGameTick;
         interval = setInterval(()=>room.extrapolate(), 1000/60);
@@ -102,8 +107,12 @@ Language.current = new englishLanguage(API);
         };
         room.onRoomLink = (link)=>console.log("room link:", link);
         room.onPlayerJoin = (player) => Utils.runAfterGameTick(()=>{
+          playerStats[player.id] = [Math.floor(Math.random()*100), Math.floor(Math.random()*100), Math.floor(Math.random()*100)];
           room.setPlayerAdmin(player.id, true);
         });
+        room.onPlayerLeave = (player)=>{
+          delete playerStats[player.id];
+        };
         room.onPlayerDiscCreated = (player) => {
           player.sprint = false;
           player.fatigue = 1;
@@ -132,7 +141,13 @@ Language.current = new englishLanguage(API);
             msg.stadium.playerPhysics.initialEnergy = minEnergy;
             msg.stadium.playerPhysics.initialEnergyBar = true;
           }
-          return true;
+          if (type!=OperationType.Stats)
+            return true;
+          if (msg.byId==0)
+            room._onStats(msg.playerId, playerStats[msg.playerId], msg.byId);
+          else
+            room.sendStats(msg.playerId, playerStats[msg.playerId], msg.byId);
+          return false;
         };
         room.onGameStart = ()=>{
           var {cMask, cGroup, radius} = room.gameState.physicsState.discs[0];
