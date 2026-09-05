@@ -828,16 +828,17 @@ declare enum VariableType {
 
   /**
    * The team type. Currently, the only accepted values for 
-   * this type is `1` and `2` where `1` is the red team and 
-   * `2` is the blue team. Specialized to be edited with a 
-   * team selector component inside a GUI environment.
+   * this type is `0`, `1`, `2`, `3`, `4` and `5` for spectators, 
+   * red, blue, green, purple and yellow teams respectively. 
+   * Specialized to be edited with a team selector component inside
+   * a GUI environment.
    */
   Team = 8,
 
   /**
    * The team type. Currently, the only accepted values for 
-   * this type is `0`, `1` and `2` where `0` is the spectators 
-   * team, `1` is the red team and `2` is the blue team. 
+   * this type is `0`, `1`, `2`, `3`, `4` and `5` for spectators, 
+   * red, blue, green, purple and yellow teams respectively. 
    * Specialized to be edited with a team selector component 
    * inside a GUI environment.
    */
@@ -2360,6 +2361,9 @@ interface SandboxRoom extends SandboxRoomBase {
    * @param teamId Id of the team whose colors are desired to be changed.
    *   - `1`: red.
    *   - `2`: blue.
+   *   - `3`: green.
+   *   - `4`: purple.
+   *   - `5`: yellow.
    * @param angle The angle of stripes. (in degrees)
    * @param colors Minimum 2, maximum 4 numeric (0 <= `integer` <= 16777215) color strings.
    * @param byId Id of the player who set the colors of the team.
@@ -2607,10 +2611,10 @@ interface SetDiscPropertiesParams {
 type UnparsedColor = "transparent" | string | [r: int, g: int, b: int];
 
 
-type UnparsedTeam2 = "red" | "blue";
+type UnparsedTeam2 = "red" | "blue" | "green" | "purple" | "yellow";
 
 
-type UnparsedTeam3 = "spec" | "red" | "blue";
+type UnparsedTeam3 = "spec" | "red" | "blue" | "green" | "purple" | "yellow";
 
 
 type UnparsedCollisionFlags = (keyof typeof CollisionFlags)[];
@@ -3826,7 +3830,7 @@ interface SandboxModeFunctions {
    * @param data An object with the following structure:
    *   - `p0: [x: number, y: number]`: The starting point of the new goal object.
    *   - `p1: [x: number, y: number]`: The ending point of the new goal object.
-   *   - `team: "red" | "blue"`: The team of the new goal object.
+   *   - `team: "red" | "blue" | "green" | "purple" | "yellow"`: The team of the new goal object.
    * 
    * @returns A Goal object.
    */
@@ -3932,7 +3936,7 @@ interface SandboxModeFunctions {
    * @param data An object with the following structure:
    *   - `p0: [x: number, y: number]`: The starting point of the new goal object.
    *   - `p1: [x: number, y: number]`: The ending point of the new goal object.
-   *   - `team: "red" | "blue"`: The team of the new goal object.
+   *   - `team: "red" | "blue" | "green" | "purple" | "yellow"`: The team of the new goal object.
    * 
    * @returns void.
    */
@@ -3991,7 +3995,7 @@ interface SandboxModeFunctions {
    * @param data An object with the following structure:
    *   - `x: number`: The x coordinate of the new spawn point.
    *   - `y: number`: The y coordinate of the new spawn point.
-   *   - `team: "red" | "blue"`: The team of the new spawn point.
+   *   - `team: "red" | "blue" | "green" | "purple" | "yellow"`: The team of the new spawn point.
    * 
    * @returns void.
    */
@@ -4005,7 +4009,7 @@ interface SandboxModeFunctions {
    *   - `name: string`: The name of the new player.
    *   - `avatar: string`: The avatar of the new player.
    *   - `flag: string`: The country code of the new player.
-   *   - `team: "spec" | "red" | "blue"`: The team of the new player. If this is "spec", the keys after this are ignored. Otherwise, player is moved to the specified team, a player disc is automatically generated and the below values are applied to the new disc.
+   *   - `team: "spec" | "red" | "blue" | "green" | "purple" | "yellow"`: The team of the new player. If this is "spec", the keys after this are ignored. Otherwise, player is moved to the specified team, a player disc is automatically generated and the below values are applied to the new disc.
    *   - `pos: [x: number, y: number] | null`: The position of the new player. Team must not be "spec".
    *   - `speed: [x: number, y: number] | null`: The speed of the new player. Team must not be "spec".
    *   - `gravity: [x: number, y: number] | null`: The gravity (acceleration) of the new player. Team must not be "spec".
@@ -4080,7 +4084,7 @@ interface SandboxModeFunctions {
    * @param data An object with the following structure:
    *   - `p0: [x: number, y: number] | null`: The new first point of the goal.
    *   - `p1: [x: number, y: number] | null`: The new second point of the goal.
-   *   - `team: "red" | "blue" | null`: The new team of the goal.
+   *   - `team: "red" | "blue" | "green" | "purple" | "yellow" | null`: The new team of the goal.
    * 
    * @returns void.
    */
@@ -4164,7 +4168,7 @@ interface SandboxModeFunctions {
    * @param data An object with the following structure:
    *   - `x: number | null`: The new x coordinate of the spawn point.
    *   - `y: number | null`: The new y coordinate of the spawn point.
-   *   - `team: "red" | "blue" | null`: The new team of the spawn point.
+   *   - `team: "red" | "blue" | "green" | "purple" | "yellow" | null`: The new team of the spawn point.
    * 
    * @returns void.
    */
@@ -4178,7 +4182,7 @@ interface SandboxModeFunctions {
    *   - `name: string | null`: The new name of the player.
    *   - `avatar: string | null`: The new avatar of the player.
    *   - `flag: string | null`: The new flag of the player.
-   *   - `team: "spec" | "red" | "blue" | null`: The new team of the player.
+   *   - `team: "spec" | "red" | "blue" | "green" | "purple" | "yellow" | null`: The new team of the player.
    *   - `pos: [x: number, y: number] | null`: The new position of the player.
    *   - `speed: [x: number, y: number] | null`: The new speed of the player.
    *   - `gravity: [x: number, y: number] | null`: The new gravity (acceleration) of the player.
@@ -4741,7 +4745,7 @@ interface FakeEventTriggers {
    * Triggers a fake player team change event for the player whose id is `playerId` that apparently originated from the player whose id is `byId`.
    * 
    * @param playerId Id of the player whose team is being changed.
-   * @param teamId Id of the desired team of the player. `0`: specetator, `1`: red, `2`: blue.
+   * @param teamId Id of the desired team of the player. `0`: specetator, `1`: red, `2`: blue, `3`: "green", `4`: "purple", `5`: "yellow".
    * @param byId Id of the player who will look like he/she sent this event.
    * 
    * @returns void.
@@ -5952,7 +5956,7 @@ interface RoomBase {
   /**
    * Sets the team colors for the team whose id is `teamId`. admins-only.
    * 
-   * @param teamId Id of the team whose colors are desired to be changed. Can either be `1`(red) or `2`(blue).
+   * @param teamId Id of the team whose colors are desired to be changed. Can be one of `1`(red), `2`(blue), `3`(green), `4`(purple) or `5`(yellow).
    * @param angle The desired angle of stripes. Should be between `-180` and `180`.
    * @param colors Minimum 2, maximum 4 numeric (0 <= `integer` <= 16777215) color parameters. First parameter is the text color, and the others are stripe colors.
    * 
@@ -7560,35 +7564,36 @@ interface HostTriggeredCallbacks {
    * Called just after a new stadium object has been added.
    * 
    * @param type Type of the object to be added.
-   * @param value An object that is supposed to contain all parameters required to add that type of object.
+   * @param id Id of the newly created object.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onStadiumAddObject?(type: uint8, value: object, customData?: any): any,
+  onStadiumAddObject?(type: uint8, id: uint16, customData?: any): any,
   
   /**
    * Called just after an existing stadium object has been updated.
    * 
    * @param type Type of the object to be updated.
    * @param id Id of the object to be updated.
-   * @param value An object that is supposed to contain all parameters required to update that type of object.
+   * @param extra Array of extra ids of objects updated.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onStadiumUpdateObject?(type: uint8, id: uint16, value: object, customData?: any): any,
+  onStadiumUpdateObject?(type: uint8, id: uint16, extra: uint16[]|undefined, customData?: any): any,
   
   /**
    * Called just after an existing stadium object has been removed.
    * 
    * @param type Type of the object to be removed.
    * @param id Id of the object to be removed.
+   * @param extra Array of extra ids of objects removed.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onStadiumRemoveObject?(type: uint8, id: uint16, customData?: any): any,
+  onStadiumRemoveObject?(type: uint8, id: uint16, extra: uint16[]|undefined, customData?: any): any,
   
   /**
    * Called just after the game clock has been paused/resumed.
@@ -8884,66 +8889,68 @@ interface HostTriggeredRoomConfigCallbacks {
    * Called just after a new stadium object has been added.
    * 
    * @param type Type of the object to be added.
-   * @param value An object that is supposed to contain all parameters required to add that type of object.
+   * @param id Id of the newly created object.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onBeforeStadiumAddObject?(type: uint8, value: object): any,
+  onBeforeStadiumAddObject?(type: uint8, id: uint16): any,
   
   /**
    * Called just after a new stadium object has been added.
    * 
    * @param type Type of the object to be added.
-   * @param value An object that is supposed to contain all parameters required to add that type of object.
+   * @param id Id of the newly created object.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void.
    */
-  onAfterStadiumAddObject?(type: uint8, value: object, customData?: any): void,
+  onAfterStadiumAddObject?(type: uint8, id: uint16, customData?: any): void,
   
   /**
    * Called just after an existing stadium object has been updated.
    * 
    * @param type Type of the object to be updated.
    * @param id Id of the object to be updated.
-   * @param value An object that is supposed to contain all parameters required to update that type of object.
+   * @param extra Array of extra ids of objects updated.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onBeforeStadiumUpdateObject?(type: uint8, id: uint16, value: object): any,
+  onBeforeStadiumUpdateObject?(type: uint8, id: uint16, extra: uint16[]|undefined): any,
   
   /**
    * Called just after an existing stadium object has been updated.
    * 
    * @param type Type of the object to be updated.
    * @param id Id of the object to be updated.
-   * @param value An object that is supposed to contain all parameters required to update that type of object.
+   * @param extra Array of extra ids of objects updated.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void.
    */
-  onAfterStadiumUpdateObject?(type: uint8, id: uint16, value: object, customData?: any): void,
+  onAfterStadiumUpdateObject?(type: uint8, id: uint16, extra: uint16[]|undefined, customData?: any): void,
   
   /**
    * Called just after an existing stadium object has been removed.
    * 
    * @param type Type of the object to be removed.
    * @param id Id of the object to be removed.
+   * @param extra Array of extra ids of objects removed.
    * 
    * @returns void or a custom data to pass to the next callback.
    */
-  onBeforeStadiumRemoveObject?(type: uint8, id: uint16): any,
+  onBeforeStadiumRemoveObject?(type: uint8, id: uint16, extra: uint16[]|undefined): any,
   
   /**
    * Called just after an existing stadium object has been removed.
    * 
    * @param type Type of the object to be removed.
    * @param id Id of the object to be removed.
+   * @param extra Array of extra ids of objects removed.
    * @param customData the custom data that was returned from the previous callback.
    * 
    * @returns void.
    */
-  onAfterStadiumRemoveObject?(type: uint8, id: uint16, customData?: any): void,
+  onAfterStadiumRemoveObject?(type: uint8, id: uint16, extra: uint16[]|undefined, customData?: any): void,
   
   /**
    * Called just after the game clock has been paused/resumed.
@@ -12967,6 +12974,9 @@ interface EventFactory {
    * @param teamId Id of the team whose colors are desired to be changed.
    *   - `1`: red.
    *   - `2`: blue.
+   *   - `3`: green.
+   *   - `4`: purple.
+   *   - `5`: yellow.
    * @param colors An instance of `TeamColors` that defines the colors of a team.
    * 
    * @returns An instance of SetTeamColorsEvent.

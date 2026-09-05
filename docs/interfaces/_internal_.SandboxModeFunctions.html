@@ -87,7 +87,7 @@
 <ul>
 <li><code>p0: [x: number, y: number]</code>: The starting point of the new goal object.</li>
 <li><code>p1: [x: number, y: number]</code>: The ending point of the new goal object.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot;</code>: The team of the new goal object.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new goal object.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="addjoint-4"><span>add<wbr/>Joint</span><a href="#addjoint-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="addjoint-5"><span class="tsd-kind-call-signature">addJoint</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.AddJointParams.html" class="tsd-signature-type tsd-kind-interface">AddJointParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#addjoint-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Creates a joint object and adds it to the current stadium.</p>
@@ -117,7 +117,7 @@
 <li><code>name: string</code>: The name of the new player.</li>
 <li><code>avatar: string</code>: The avatar of the new player.</li>
 <li><code>flag: string</code>: The country code of the new player.</li>
-<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot;</code>: The team of the new player. If this is &quot;spec&quot;, the keys after this are ignored. Otherwise, player is moved to the specified team, a player disc is automatically generated and the below values are applied to the new disc.</li>
+<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new player. If this is &quot;spec&quot;, the keys after this are ignored. Otherwise, player is moved to the specified team, a player disc is automatically generated and the below values are applied to the new disc.</li>
 <li><code>pos: [x: number, y: number] | null</code>: The position of the new player. Team must not be &quot;spec&quot;.</li>
 <li><code>speed: [x: number, y: number] | null</code>: The speed of the new player. Team must not be &quot;spec&quot;.</li>
 <li><code>gravity: [x: number, y: number] | null</code>: The gravity (acceleration) of the new player. Team must not be &quot;spec&quot;.</li>
@@ -149,7 +149,7 @@
 <ul>
 <li><code>x: number</code>: The x coordinate of the new spawn point.</li>
 <li><code>y: number</code>: The y coordinate of the new spawn point.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot;</code>: The team of the new spawn point.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new spawn point.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="addstadiumobject-4"><span>add<wbr/>Stadium<wbr/>Object</span><a href="#addstadiumobject-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="addstadiumobject-5"><span class="tsd-kind-call-signature">addStadiumObject</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">type</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">object</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#addstadiumobject-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Adds a new stadium object.</p>
@@ -186,7 +186,7 @@
 <ul>
 <li><code>p0: [x: number, y: number]</code>: The starting point of the new goal object.</li>
 <li><code>p1: [x: number, y: number]</code>: The ending point of the new goal object.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot;</code>: The team of the new goal object.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new goal object.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <a href="../classes/_internal_.Goal.html" class="tsd-signature-type tsd-kind-class">Goal</a></h4><p>A Goal object.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="createjoint-4"><span>create<wbr/>Joint</span><a href="#createjoint-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="createjoint-5"><span class="tsd-kind-call-signature">createJoint</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.CreateJointParams.html" class="tsd-signature-type tsd-kind-interface">CreateJointParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../classes/_internal_.Joint.html" class="tsd-signature-type tsd-kind-class">Joint</a><a href="#createjoint-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Creates a joint object in memory using disc indices and returns it.</p>
@@ -414,7 +414,7 @@
 <ul>
 <li><code>p0: [x: number, y: number] | null</code>: The new first point of the goal.</li>
 <li><code>p1: [x: number, y: number] | null</code>: The new second point of the goal.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot; | null</code>: The new team of the goal.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot; | null</code>: The new team of the goal.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="updatejoint-4"><span>update<wbr/>Joint</span><a href="#updatejoint-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="updatejoint-5"><span class="tsd-kind-call-signature">updateJoint</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">idx</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.UpdateJointParams.html" class="tsd-signature-type tsd-kind-interface">UpdateJointParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#updatejoint-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Updates the <code>idx</code>th joint's only the given values.</p>
@@ -446,7 +446,7 @@
 <li><code>name: string | null</code>: The new name of the player.</li>
 <li><code>avatar: string | null</code>: The new avatar of the player.</li>
 <li><code>flag: string | null</code>: The new flag of the player.</li>
-<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot; | null</code>: The new team of the player.</li>
+<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot; | null</code>: The new team of the player.</li>
 <li><code>pos: [x: number, y: number] | null</code>: The new position of the player.</li>
 <li><code>speed: [x: number, y: number] | null</code>: The new speed of the player.</li>
 <li><code>gravity: [x: number, y: number] | null</code>: The new gravity (acceleration) of the player.</li>
@@ -481,7 +481,7 @@
 <ul>
 <li><code>x: number | null</code>: The new x coordinate of the spawn point.</li>
 <li><code>y: number | null</code>: The new y coordinate of the spawn point.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot; | null</code>: The new team of the spawn point.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot; | null</code>: The new team of the spawn point.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="updatestadiumbg-4"><span>update<wbr/>Stadium<wbr/>Bg</span><a href="#updatestadiumbg-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="updatestadiumbg-5"><span class="tsd-kind-call-signature">updateStadiumBg</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.UpdateStadiumBgParams.html" class="tsd-signature-type tsd-kind-interface">UpdateStadiumBgParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#updatestadiumbg-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Updates the current stadium's only the given background values.</p>

@@ -78,7 +78,7 @@ you will probably want to write your own game logic from scratch in onGameTick.<
 <ul>
 <li><code>p0: [x: number, y: number]</code>: The starting point of the new goal object.</li>
 <li><code>p1: [x: number, y: number]</code>: The ending point of the new goal object.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot;</code>: The team of the new goal object.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new goal object.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <a href="../classes/_internal_.Goal.html" class="tsd-signature-type tsd-kind-class">Goal</a></h4><p>A Goal object.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="createplane-4"><span>create<wbr/>Plane</span><a href="#createplane-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="createplane-5"><span class="tsd-kind-call-signature">createPlane</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.CreatePlaneParams.html" class="tsd-signature-type tsd-kind-interface">CreatePlaneParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../classes/_internal_.Plane.html" class="tsd-signature-type tsd-kind-class">Plane</a><a href="#createplane-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Creates a plane object in memory and returns it.</p>
@@ -156,7 +156,7 @@ you will probably want to write your own game logic from scratch in onGameTick.<
 <ul>
 <li><code>p0: [x: number, y: number]</code>: The starting point of the new goal object.</li>
 <li><code>p1: [x: number, y: number]</code>: The ending point of the new goal object.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot;</code>: The team of the new goal object.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new goal object.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="addplane-4"><span>add<wbr/>Plane</span><a href="#addplane-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="addplane-5"><span class="tsd-kind-call-signature">addPlane</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.AddPlaneParams.html" class="tsd-signature-type tsd-kind-interface">AddPlaneParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#addplane-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Creates a plane object and adds it to the current stadium.</p>
@@ -199,7 +199,7 @@ you will probably want to write your own game logic from scratch in onGameTick.<
 <ul>
 <li><code>x: number</code>: The x coordinate of the new spawn point.</li>
 <li><code>y: number</code>: The y coordinate of the new spawn point.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot;</code>: The team of the new spawn point.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new spawn point.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="addplayer-4"><span>add<wbr/>Player</span><a href="#addplayer-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="addplayer-5"><span class="tsd-kind-call-signature">addPlayer</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.AddPlayerParams.html" class="tsd-signature-type tsd-kind-interface">AddPlayerParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#addplayer-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Adds a player with given properties to the current stadium.</p>
@@ -209,7 +209,7 @@ you will probably want to write your own game logic from scratch in onGameTick.<
 <li><code>name: string</code>: The name of the new player.</li>
 <li><code>avatar: string</code>: The avatar of the new player.</li>
 <li><code>flag: string</code>: The country code of the new player.</li>
-<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot;</code>: The team of the new player. If this is &quot;spec&quot;, the keys after this are ignored. Otherwise, player is moved to the specified team, a player disc is automatically generated and the below values are applied to the new disc.</li>
+<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot;</code>: The team of the new player. If this is &quot;spec&quot;, the keys after this are ignored. Otherwise, player is moved to the specified team, a player disc is automatically generated and the below values are applied to the new disc.</li>
 <li><code>pos: [x: number, y: number] | null</code>: The position of the new player. Team must not be &quot;spec&quot;.</li>
 <li><code>speed: [x: number, y: number] | null</code>: The speed of the new player. Team must not be &quot;spec&quot;.</li>
 <li><code>gravity: [x: number, y: number] | null</code>: The gravity (acceleration) of the new player. Team must not be &quot;spec&quot;.</li>
@@ -260,7 +260,7 @@ you will probably want to write your own game logic from scratch in onGameTick.<
 <ul>
 <li><code>p0: [x: number, y: number] | null</code>: The new first point of the goal.</li>
 <li><code>p1: [x: number, y: number] | null</code>: The new second point of the goal.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot; | null</code>: The new team of the goal.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot; | null</code>: The new team of the goal.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="updateplane-4"><span>update<wbr/>Plane</span><a href="#updateplane-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="updateplane-5"><span class="tsd-kind-call-signature">updatePlane</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">idx</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.UpdatePlaneParams.html" class="tsd-signature-type tsd-kind-interface">UpdatePlaneParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#updateplane-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Updates the <code>idx</code>th plane's only the given values.</p>
@@ -324,7 +324,7 @@ you will probably want to write your own game logic from scratch in onGameTick.<
 <ul>
 <li><code>x: number | null</code>: The new x coordinate of the spawn point.</li>
 <li><code>y: number | null</code>: The new y coordinate of the spawn point.</li>
-<li><code>team: &quot;red&quot; | &quot;blue&quot; | null</code>: The new team of the spawn point.</li>
+<li><code>team: &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot; | null</code>: The new team of the spawn point.</li>
 </ul>
 </div></li></ul></div><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>void.</p>
 </div></li></ul></section><section class="tsd-panel tsd-member"><h3 class="tsd-anchor-link" id="updateplayer-4"><span>update<wbr/>Player</span><a href="#updateplayer-4" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class=""><div class="tsd-signature tsd-anchor-link" id="updateplayer-5"><span class="tsd-kind-call-signature">updatePlayer</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">playerId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="_internal_.UpdatePlayerParams.html" class="tsd-signature-type tsd-kind-interface">UpdatePlayerParams</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><a href="#updateplayer-5" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div><div class="tsd-description"><div class="tsd-comment tsd-typography"><p>Updates the player(<code>playerId</code>)'s only the given values.</p>
@@ -334,7 +334,7 @@ you will probably want to write your own game logic from scratch in onGameTick.<
 <li><code>name: string | null</code>: The new name of the player.</li>
 <li><code>avatar: string | null</code>: The new avatar of the player.</li>
 <li><code>flag: string | null</code>: The new flag of the player.</li>
-<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot; | null</code>: The new team of the player.</li>
+<li><code>team: &quot;spec&quot; | &quot;red&quot; | &quot;blue&quot; | &quot;green&quot; | &quot;purple&quot; | &quot;yellow&quot; | null</code>: The new team of the player.</li>
 <li><code>pos: [x: number, y: number] | null</code>: The new position of the player.</li>
 <li><code>speed: [x: number, y: number] | null</code>: The new speed of the player.</li>
 <li><code>gravity: [x: number, y: number] | null</code>: The new gravity (acceleration) of the player.</li>
