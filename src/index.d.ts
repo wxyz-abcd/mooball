@@ -3054,6 +3054,31 @@ interface AddGoalParams {
   p1: [x: number, y: number],
 
   /**
+   * The type of the new goal object. Can either be 0(no background) or 1(soccer goal background). Defaults to 0.
+   */
+  type: int8;
+
+  /**
+   * The first parameter of the new goal object. Value range and explanation depends on the goal type. Defaults to 70.
+   */
+  param1: number;
+
+  /**
+   * The second parameter of the new goal object. Value range and explanation depends on the goal type. Defaults to 35.
+   */
+  param2: number;
+
+  /**
+   * The first disc id of the new goal object. -1 = empty. Either (p0, p1) or (d0, d1) pairs must be set in a goal object.
+   */
+  d0: int16;
+
+  /**
+   * The second disc id of the new goal object. -1 = empty. Either (p0, p1) or (d0, d1) pairs must be set in a goal object.
+   */
+  d1: int16;
+
+  /**
    * The team of the new goal object.
    */
   team: UnparsedTeam2
@@ -3349,21 +3374,46 @@ interface UpdateSegmentParams {
 
 
 interface UpdateGoalParams {
+  
+  /**
+   * The new starting point of the goal object.
+   */
+  p0: [x: number, y: number],
 
   /**
-   * The new first point of the goal.
+   * The new ending point of new goal object.
    */
-  p0?: [x: number, y: number],
+  p1: [x: number, y: number],
 
   /**
-   * The new second point of the goal.
+   * The new type of the goal object. Can either be 0(no background) or 1(soccer goal background). Defaults to 0.
    */
-  p1?: [x: number, y: number],
+  type: int8;
 
   /**
-   * The new team of the goal.
+   * The new first parameter of the goal object. Value range and explanation depends on the goal type. Defaults to 70.
    */
-  team?: UnparsedTeam2
+  param1: number;
+
+  /**
+   * The new second parameter of the goal object. Value range and explanation depends on the goal type. Defaults to 35.
+   */
+  param2: number;
+
+  /**
+   * The new first disc id of the goal object. -1 = empty. Either (p0, p1) or (d0, d1) pairs must be set in a goal object.
+   */
+  d0: int16;
+
+  /**
+   * The new second disc id of the goal object. -1 = empty. Either (p0, p1) or (d0, d1) pairs must be set in a goal object.
+   */
+  d1: int16;
+
+  /**
+   * The new team of the goal object.
+   */
+  team: UnparsedTeam2
 }
 
 
@@ -3710,12 +3760,67 @@ interface UpdateStadiumBgParams {
   /**
    * The new background color of the current stadium.
    */
-  color?: UnparsedColor,
+  color?: int,
 
   /**
    * The new goal line distance of the current stadium.
    */
-  goalLine?: number
+  goalLine?: number,
+
+  /**
+   * First background stripe color.
+   */
+  stripe1?: int,
+
+  /**
+   * Second background stripe color.
+   */
+  stripe2?: int,
+
+  /**
+   * Width of the rectangle inside the penalty box.
+   */
+  innerRectWidth?: number,
+
+  /**
+   * Height of the rectangle inside the penalty box.
+   */
+  innerRectHeight?: number,
+
+  /**
+   * Distance of penalty spot to the goal line.
+   */
+  penaltyDistance?: number,
+
+  /**
+   * Width of the rectangle of the penalty box.
+   */
+  outerRectWidth?: number,
+
+  /**
+   * Height of the rectangle of the penalty box.
+   */
+  outerRectHeight?: number,
+
+  /**
+   * Radius of the arc just outside the penalty box.
+   */
+  penaltyBoxArcRadius?: number,
+
+  /**
+   * Radius of the spot indicators.
+   */
+  spotIndicatorRadius?: number,
+
+  /**
+   * Width of the vertical buffer zones at the left/right borders of the stadium.
+   */
+  bufferWidth?: number,
+
+  /**
+   * Height of the horizontal buffer zones at the top/bottom borders of the stadium.
+   */
+  bufferHeight?: number
 }
 
 
@@ -3931,11 +4036,26 @@ interface SandboxModeFunctions {
   addSegment(data: AddSegmentParams): void;
 
   /**
+   * The first parameter of this Goal. Value range and explanation depends on the goal type. Defaults to 70.
+   */
+  public param1: number;
+
+  /**
+   * The second parameter of this Goal. Value range and explanation depends on the goal type. Defaults to 35.
+   */
+  public param2: number;
+
+  /**
    * Creates a goal object and adds it to the current stadium.
    * 
    * @param data An object with the following structure:
    *   - `p0: [x: number, y: number]`: The starting point of the new goal object.
    *   - `p1: [x: number, y: number]`: The ending point of the new goal object.
+   *   - `d0: uint16`: The first disc id of the new goal object.
+   *   - `d1: uint16`: The first disc id of the new goal object.
+   *   - `type: int8`: Type of the new goal object. (0/1)
+   *   - `param1: number`: First parameter of the new goal object.
+   *   - `param2: number`: Second parameter of the new goal object.
    *   - `team: "red" | "blue" | "green" | "purple" | "yellow"`: The team of the new goal object.
    * 
    * @returns void.
@@ -4082,9 +4202,14 @@ interface SandboxModeFunctions {
    * 
    * @param idx Index of the goal that is desired to be updated.
    * @param data An object with the following structure:
-   *   - `p0: [x: number, y: number] | null`: The new first point of the goal.
-   *   - `p1: [x: number, y: number] | null`: The new second point of the goal.
-   *   - `team: "red" | "blue" | "green" | "purple" | "yellow" | null`: The new team of the goal.
+   *   - `p0: [x: number, y: number]`: The new starting point of the goal object.
+   *   - `p1: [x: number, y: number]`: The new ending point of the goal object.
+   *   - `d0: uint16`: The new first disc id of the goal object.
+   *   - `d1: uint16`: The new first disc id of the goal object.
+   *   - `type: int8`: The new type of the goal object. (0/1)
+   *   - `param1: number`: The new first parameter of the goal object.
+   *   - `param2: number`: The new second parameter of the goal object.
+   *   - `team: "red" | "blue" | "green" | "purple" | "yellow"`: The new team of the goal object.
    * 
    * @returns void.
    */
@@ -4299,8 +4424,19 @@ interface SandboxModeFunctions {
    *   - `height: number | null`: The new background height of the current stadium.
    *   - `kickOffRadius: number | null`: The new kick-off radius of the current stadium.
    *   - `cornerRadius: number | null`: The new background corner radius of the current stadium.
-   *   - `color: "transparent" | string | [r: number, g: number, b: number] | null`: The new background color of the current stadium.
+   *   - `color: int | null`: The new background color of the current stadium.
    *   - `goalLine: number | null`: The new goal line distance of the current stadium.
+   *   - `stripe1: int | null`: First background stripe color.
+   *   - `stripe2: int | null`: Second background stripe color.
+   *   - `innerRectWidth: number | null`: Width of the rectangle inside the penalty box.
+   *   - `innerRectHeight: number | null`: Height of the rectangle inside the penalty box.
+   *   - `penaltyDistance: number | null`: Distance of penalty spot to the goal line.
+   *   - `outerRectWidth: number | null`: Width of the rectangle of the penalty box.
+   *   - `outerRectHeight: number | null`: Height of the rectangle of the penalty box.
+   *   - `penaltyBoxArcRadius: number | null`: Radius of the arc just outside the penalty box.
+   *   - `spotIndicatorRadius: number | null`: Radius of the spot indicators.
+   *   - `bufferWidth: number | null`: Width of the vertical buffer zones at the left/right borders of the stadium.
+   *   - `bufferHeight: number | null`: Height of the horizontal buffer zones at the top/bottom borders of the stadium.
    * 
    * @returns void.
    */

@@ -487,7 +487,7 @@ Language.current = new englishLanguage(API);
         
         function addGoalTest (msg)
         {
-          goal_idx ??= room.stadium.goals.length;
+          goal_idx ??= room.gameState.physicsState.goals.length;
           room.addGoal({
             p0:[0, 100],
             p1:[0,-100]
